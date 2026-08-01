@@ -1,0 +1,383 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Semester {
+  GANJIL
+  GENAP
+}
+
+enum Role {
+  GURU
+  ADMIN
+}
+
+enum Jenjang {
+  MTS
+  MA
+}
+
+enum StatusAbsensiGuru {
+  HADIR
+  TELAT
+  IZIN
+  SAKIT
+  CUTI
+  ALPA
+  BELUM_ABSEN
+}
+
+enum StatusAbsensiSiswa {
+  HADIR
+  SAKIT
+  IZIN
+  ALPA
+}
+
+enum StatusSiswa {
+  AKTIF
+  MUTASI
+  LULUS
+}
+
+enum JenisPengajuan {
+  IZIN
+  SAKIT
+  CUTI
+}
+
+enum StatusApproval {
+  MENUNGGU
+  DISETUJUI
+  DITOLAK
+}
+
+enum JenisHariKalender {
+  LIBUR_NASIONAL
+  CUTI_BERSAMA
+  KEGIATAN_SEKOLAH
+}
+
+model User {
+  id                 String            @id @default(cuid())
+  kodeAkses          String?           @unique
+  kodeUnik           String?           @unique
+  password           String
+  nama               String
+  role               Role              @default(GURU)
+  jenisKelamin       String?
+  tempatLahir        String?
+  tanggalLahir       DateTime?
+  noTelp             String?
+  foto               String?
+  jabatan            String?
+  isAktif            Boolean           @default(true)
+  mustChangePass     Boolean           @default(true)
+  failedLoginAttempts Int              @default(0)
+  lockUntil          DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  mapelDiampu        UserMapel[]
+  jadwalSebagaiGuru  JadwalMengajar[]  @relation("GuruUtama")
+  jadwalSebagaiPengganti JadwalMengajar[] @relation("GuruPengganti")
+  absensiGuru        AbsensiGuru[]
+  pengajuanIzin      PengajuanIzin[]   @relation("PengajuIzin")
+  izinDiproses       PengajuanIzin[]   @relation("ApproverIzin")
+  pengumuman         Pengumuman[]
+  pengumumanDibaca   PengumumanDibaca[]
+  logAktivitas       LogAktivitas[]
+  masukan            Masukan[]
+  waliTingkat        GuruWaliTingkat[]
+  notifikasi         Notifikasi[]
+
+  @@map("users")
+}
+
+model Mapel {
+  id          String   @id @default(cuid())
+  nama        String
+  jenjang     Jenjang
+  kurikulum   String[] @default(["Kurikulum Merdeka"])
+  tingkat     String[]
+  isAktif     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  guru        UserMapel[]
+  jadwal      JadwalMengajar[]
+
+  @@map("mapel")
+}
+
+model UserMapel {
+  userId  String
+  mapelId String
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mapel   Mapel @relation(fields: [mapelId], references: [id], onDelete: Cascade)
+
+  @@id([userId, mapelId])
+  @@map("user_mapel")
+}
+
+model Siswa {
+  id           String       @id @default(cuid())
+  nisn         String
+  nama         String
+  jenjang      Jenjang
+  tingkat      String       // "VII", "VIII", "IX", "X", "XI", "XII"
+  jenisKelamin String?
+  tanggalLahir DateTime?    @db.Date
+  namaOrangTua String?
+  status       StatusSiswa  @default(AKTIF)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @default(now()) @updatedAt
+
+  absensi      AbsensiSiswa[]
+  riwayat      RiwayatSiswa[]
+
+  @@unique([nisn, jenjang])
+  @@map("siswa")
+}
+
+model RiwayatSiswa {
+  id            String      @id @default(cuid())
+  siswaId       String
+  siswa         Siswa       @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  jenjang       Jenjang
+  tingkat       String
+  tahunAjaranId String
+  tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id])
+  status        StatusSiswa @default(AKTIF)
+  createdAt     DateTime    @default(now())
+
+  @@map("riwayat_siswa")
+}
+
+model TahunAjaran {
+  id        String   @id @default(cuid())
+  label     String   // "2025/2026"
+  isAktif   Boolean  @default(false)
+  tanggalMulaiGanjil   DateTime
+  tanggalSelesaiGanjil DateTime
+  tanggalMulaiGenap    DateTime
+  tanggalSelesaiGenap  DateTime
+
+  jadwal    JadwalMengajar[]
+  kalender  KalenderAkademik[]
+  riwayat   RiwayatSiswa[]
+  pengumuman Pengumuman[]
+
+  @@map("tahun_ajaran")
+}
+
+model JadwalTingkat {
+  id               String         @id @default(cuid())
+  jadwalMengajarId String
+  jadwal           JadwalMengajar @relation(fields: [jadwalMengajarId], references: [id], onDelete: Cascade)
+  tingkat          String
+
+  @@map("jadwal_tingkat")
+}
+
+model JadwalMengajar {
+  id               String     @id @default(cuid())
+  guruId           String
+  guru             User       @relation("GuruUtama", fields: [guruId], references: [id])
+  guruPenggantiId  String?
+  guruPengganti    User?      @relation("GuruPengganti", fields: [guruPenggantiId], references: [id])
+  mapelId          String
+  mapel            Mapel      @relation(fields: [mapelId], references: [id])
+  jenjang          Jenjang
+  semester         Semester
+  tingkatList      JadwalTingkat[]
+  hari             Int        // 1=Senin ... 7=Minggu
+  jamMulai         String     // "08:00"
+  jamSelesai       String     // "09:15"
+  tahunAjaranId    String
+  tahunAjaran      TahunAjaran @relation(fields: [tahunAjaranId], references: [id])
+
+  absensiGuru      AbsensiGuru[]
+  absensiSiswa     AbsensiSiswa[]
+
+  @@index([guruId, hari])
+  @@index([jenjang, hari])
+  @@map("jadwal_mengajar")
+}
+
+model AbsensiGuru {
+  id          String            @id @default(cuid())
+  jadwalId    String
+  jadwal      JadwalMengajar    @relation(fields: [jadwalId], references: [id])
+  guruId      String
+  guru        User              @relation(fields: [guruId], references: [id])
+  tanggal     DateTime          @db.Date
+  waktuAbsen  DateTime?
+  status      StatusAbsensiGuru @default(BELUM_ABSEN)
+  lokasi      String?
+  catatan     String?
+  createdAt   DateTime          @default(now())
+
+  @@unique([jadwalId, tanggal])
+  @@index([guruId, tanggal])
+  @@map("absensi_guru")
+}
+
+model AbsensiSiswa {
+  id          String              @id @default(cuid())
+  jadwalId    String
+  jadwal      JadwalMengajar      @relation(fields: [jadwalId], references: [id])
+  siswaId     String
+  siswa       Siswa               @relation(fields: [siswaId], references: [id])
+  tanggal     DateTime            @db.Date
+  status      StatusAbsensiSiswa  @default(HADIR)
+  alasan      String?
+  materiAjar  String?
+  createdAt   DateTime            @default(now())
+
+  @@unique([jadwalId, siswaId, tanggal])
+  @@index([siswaId, tanggal])
+  @@map("absensi_siswa")
+}
+
+model PengajuanIzin {
+  id             String          @id @default(cuid())
+  guruId         String
+  guru           User            @relation("PengajuIzin", fields: [guruId], references: [id])
+  jenis          JenisPengajuan
+  tanggalMulai   DateTime        @db.Date
+  tanggalSelesai DateTime        @db.Date
+  keterangan     String
+  lampiranUrl    String?
+  status         StatusApproval  @default(MENUNGGU)
+  catatanAdmin   String?
+  diprosesOlehId String?
+  diprosesOleh   User?           @relation("ApproverIzin", fields: [diprosesOlehId], references: [id])
+  diprosesPada   DateTime?
+  createdAt      DateTime        @default(now())
+
+  @@map("pengajuan_izin")
+}
+
+model KalenderAkademik {
+  id            String            @id @default(cuid())
+  tanggal       DateTime          @db.Date
+  jenis         JenisHariKalender
+  keterangan    String
+  tahunAjaranId String?
+  tahunAjaran   TahunAjaran?      @relation(fields: [tahunAjaranId], references: [id])
+
+  @@unique([tanggal])
+  @@map("kalender_akademik")
+}
+
+model Pengumuman {
+  id              String             @id @default(cuid())
+  judul           String
+  isi             String
+  dibuatOlehId    String
+  dibuatOleh      User               @relation(fields: [dibuatOlehId], references: [id])
+  targetJenjang   Jenjang?           // null = semua
+  pinned          Boolean            @default(false)
+  foto            String?
+  tahunAjaranId   String?
+  tahunAjaran     TahunAjaran?       @relation(fields: [tahunAjaranId], references: [id])
+  isPublished     Boolean            @default(true)
+  isAutoGenerated Boolean            @default(false)
+  tanggalPublish  DateTime           @default(now())
+  createdAt       DateTime           @default(now())
+
+  dibaca          PengumumanDibaca[]
+
+  @@map("pengumuman")
+}
+
+model PengumumanDibaca {
+  id           String     @id @default(cuid())
+  pengumumanId String
+  pengumuman   Pengumuman @relation(fields: [pengumumanId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt       DateTime   @default(now())
+
+  @@unique([pengumumanId, userId])
+  @@map("pengumuman_dibaca")
+}
+
+model LogAktivitas {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  aksi      String
+  modul     String
+  detail    Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("log_aktivitas")
+}
+
+model Masukan {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kategori       String   // SARAN, BUG, KENDALA, LAINNYA
+  subjek         String
+  pesan          String
+  status         String   @default("MENUNGGU") // MENUNGGU, DITINJAU, SELESAI
+  tanggapanAdmin String?
+  createdAt      DateTime @default(now())
+
+  @@map("masukan")
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("setting")
+}
+
+model GuruWaliTingkat {
+  id      String  @id @default(cuid())
+  userId  String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jenjang Jenjang
+  tingkat String
+
+  @@unique([userId, jenjang, tingkat])
+  @@map("guru_wali_tingkat")
+}
+
+model Notifikasi {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  judul     String
+  pesan     String
+  isDibaca  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isDibaca])
+  @@map("notifikasi")
+}
+
+model Faq {
+  id         String   @id @default(cuid())
+  pertanyaan String
+  jawaban    String
+  urutan     Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("faq")
+}

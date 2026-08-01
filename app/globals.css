@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: var(--primary, #0FBE85);
+  --color-primary-hover: var(--primary-hover, #0DA876);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
+  --radius-3xl: 8px;
+}
+
+/* ─── Light Mode Tokens (Default & Lighter) ─────────────────── */
+:root, .light {
+  --primary: #0FBE85;
+  --primary-hover: #0DA876;
+  --primary-subtle: rgba(15, 190, 133, 0.1);
+  --bg: #F0F2F5;
+  --surface: #FFFFFF;
+  --surface-subtle: #F7F8FA;
+  --border: #E4E7EC;
+  --border-subtle: #EEF0F4;
+  --text-primary: #101828;
+  --text-secondary: #4B5563;
+  --text-tertiary: #9CA3AF;
+}
+
+.light-lighter {
+  --primary: #0FBE85;
+  --primary-hover: #0DA876;
+  --primary-subtle: rgba(15, 190, 133, 0.1);
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-subtle: #F1F5F9;
+  --border: #CBD5E1;
+  --border-subtle: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-tertiary: #94A3B8;
+}
+
+/* ─── Dark Mode Tokens (Dark & Darker) ──────────────────────── */
+.dark {
+  --primary: #0FBE85;
+  --primary-hover: #0DA876;
+  --primary-subtle: rgba(15, 190, 133, 0.15);
+  --bg: #0D1117;
+  --surface: #161B27;
+  --surface-subtle: #1C2333;
+  --border: #21293D;
+  --border-subtle: #1C2333;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-tertiary: #4B5563;
+}
+
+.dark-darker {
+  --primary: #0FBE85;
+  --primary-hover: #0DA876;
+  --primary-subtle: rgba(15, 190, 133, 0.15);
+  --bg: #05070B;
+  --surface: #0D1117;
+  --surface-subtle: #111827;
+  --border: #1F2937;
+  --border-subtle: #0D1117;
+  --text-primary: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --text-tertiary: #4B5563;
+}
+
+/* ─── Base Styles ───────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
