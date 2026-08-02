@@ -74,3 +74,15 @@ export const passwordChangeSchema = z.object({
   message: "Konfirmasi password tidak cocok",
   path: ["confirmPassword"],
 });
+
+export const pengumumanCreateSchema = z.object({
+  judul: z.string().min(1, "Judul wajib diisi"),
+  isi: z.string().min(1, "Isi wajib diisi"),
+  targetJenjang: z.enum(["MTS", "MA"]).optional().nullable(),
+  pinned: z.boolean().optional(),
+  foto: z.string().optional().nullable(),
+  tahunAjaranId: z.string().optional().nullable(),
+  isPublished: z.boolean().optional(),
+});
+
+export const pengumumanUpdateSchema = pengumumanCreateSchema.partial();

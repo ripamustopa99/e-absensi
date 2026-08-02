@@ -52,35 +52,48 @@ export async function getMapelList(filters?: {
   `;
   const dataRes = await query(sql, [...params, limit, offset]);
 
-  const formattedData = await Promise.all(
-    dataRes.rows.map(async (row) => {
-      let guruCount = 0;
-      let jadwalCount = 0;
-      try {
-        const c1 = await query(`SELECT COUNT(*) FROM user_mapel WHERE "mapelId" = $1`, [row.id]);
-        guruCount = parseInt(c1.rows[0]?.count || "0", 10);
-      } catch {}
-      try {
-        const c2 = await query(`SELECT COUNT(*) FROM jadwal_mengajar WHERE "mapelId" = $1`, [row.id]);
-        jadwalCount = parseInt(c2.rows[0]?.count || "0", 10);
-      } catch {}
+  const mapelIds = dataRes.rows.map((r: any) => r.id);
+  const guruCountMap = new Map<string, number>();
+  const jadwalCountMap = new Map<string, number>();
 
-      return {
-        id: row.id,
-        nama: row.nama,
-        jenjang: row.jenjang,
-        kurikulum: row.kurikulum,
-        tingkat: row.tingkat,
-        isAktif: row.isAktif,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-        _count: {
-          guru: guruCount,
-          jadwal: jadwalCount,
-        },
-      };
-    })
-  );
+  if (mapelIds.length > 0) {
+    try {
+      const gCounts = await query(
+        `SELECT "mapelId", COUNT(*) as count FROM user_mapel WHERE "mapelId" = ANY($1::text[]) GROUP BY "mapelId"`,
+        [mapelIds]
+      );
+      for (const row of gCounts.rows) {
+        guruCountMap.set(row.mapelId, parseInt(row.count, 10));
+      }
+    } catch (r: any) {}
+
+    try {
+      const jCounts = await query(
+        `SELECT "mapelId", COUNT(*) as count FROM jadwal_mengajar WHERE "mapelId" = ANY($1::text[]) GROUP BY "mapelId"`,
+        [mapelIds]
+      );
+      for (const row of jCounts.rows) {
+        jadwalCountMap.set(row.mapelId, parseInt(row.count, 10));
+      }
+    } catch (r: any) {}
+  }
+
+  const formattedData = dataRes.rows.map((row: any) => {
+    return {
+      id: row.id,
+      nama: row.nama,
+      jenjang: row.jenjang,
+      kurikulum: row.kurikulum,
+      tingkat: row.tingkat,
+      isAktif: row.isAktif,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      _count: {
+        guru: guruCountMap.get(row.id) || 0,
+        jadwal: jadwalCountMap.get(row.id) || 0,
+      },
+    };
+  });
 
   return {
     data: formattedData,

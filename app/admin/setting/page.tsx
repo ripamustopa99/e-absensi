@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { Loader2, Settings, Database, LayoutTemplate, Palette, Sun, Moon, Sparkles } from "lucide-react";
+import { Loader2, Settings, Database, LayoutTemplate, Palette, Sun, Moon, Sparkles, Pencil, X, Check } from "lucide-react";
 
 const PRESET_COLORS = [
   { name: "Hijau (Default)", value: "#0FBE85" },
@@ -31,6 +31,10 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Edit Mode states
+  const [isEditingAkademik, setIsEditingAkademik] = useState(false);
+  const [isEditingCms, setIsEditingCms] = useState(false);
 
   // Form states
   const [akademik, setAkademik] = useState({
@@ -198,8 +202,13 @@ export default function AdminSettingsPage() {
       toast.success("Pengaturan berhasil disimpan");
       if (key === "CONFIG_APP") {
         window.dispatchEvent(new Event("brand-updated"));
+        setIsEditingCms(false);
+      }
+      if (key === "CONFIG_AKADEMIK") {
+        setIsEditingAkademik(false);
       }
       router.refresh();
+      fetchSettings();
     } catch (err) {
       console.error(err);
       toast.error("Gagal menyimpan pengaturan");
@@ -219,6 +228,8 @@ export default function AdminSettingsPage() {
       toast.error("Gagal men-generate tahun ajaran");
     }
   };
+
+  const activeTaLabel = tahunAjaranList.find((t) => t.id === akademik.tahunAjaranId)?.label || "Belum dipilih";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
@@ -260,145 +271,271 @@ export default function AdminSettingsPage() {
       ) : (
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm">
           {activeTab === "akademik" && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold text-[var(--text-primary)]">Pengaturan Kalender & Semester Akademik</h2>
-                <button
-                  type="button"
-                  onClick={handleGenerateNextYear}
-                  className="px-3 py-1.5 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-primary)] text-[11px] font-bold rounded-lg hover:bg-[var(--border)] transition-colors"
-                >
-                  Generate Tahun Ajaran Otomatis
-                </button>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-[var(--text-secondary)]">Pilih Tahun Ajaran Aktif</label>
-                <select
-                  value={akademik.tahunAjaranId}
-                  onChange={(e) => setAkademik({ ...akademik, tahunAjaranId: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
-                >
-                  <option value="">-- Pilih Tahun Ajaran --</option>
-                  {tahunAjaranList.map((ta) => (
-                    <option key={ta.id} value={ta.id}>{ta.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-[var(--text-secondary)]">Mulai Semester Ganjil</label>
-                  <input
-                    type="date"
-                    value={akademik.tanggalMulaiGanjil}
-                    onChange={(e) => setAkademik({ ...akademik, tanggalMulaiGanjil: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
-                  />
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+                <div>
+                  <h2 className="text-sm font-bold text-[var(--text-primary)]">Pengaturan Kalender & Semester Akademik</h2>
+                  <p className="text-[12px] text-[var(--text-secondary)]">Kelola tahun ajaran aktif serta rentang tanggal semester ganjil dan genap.</p>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-[var(--text-secondary)]">Selesai Semester Ganjil</label>
-                  <input
-                    type="date"
-                    value={akademik.tanggalSelesaiGanjil}
-                    onChange={(e) => setAkademik({ ...akademik, tanggalSelesaiGanjil: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
-                  />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleGenerateNextYear}
+                    className="px-3 py-1.5 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-primary)] text-[11px] font-bold rounded-lg hover:bg-[var(--border)] transition-colors"
+                  >
+                    Generate TA Otomatis
+                  </button>
+                  {!isEditingAkademik ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingAkademik(true)}
+                      className="px-4 py-1.5 text-white text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5"
+                      style={{ backgroundColor: "var(--primary)" }}
+                    >
+                      <Pencil size={13} /> Edit Pengaturan
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingAkademik(false);
+                        fetchSettings();
+                      }}
+                      className="px-3 py-1.5 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] text-[11px] font-bold rounded-lg hover:text-[var(--text-primary)] transition-colors flex items-center gap-1"
+                    >
+                      <X size={13} /> Batal
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-[var(--text-secondary)]">Mulai Semester Genap</label>
-                  <input
-                    type="date"
-                    value={akademik.tanggalMulaiGenap}
-                    onChange={(e) => setAkademik({ ...akademik, tanggalMulaiGenap: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
-                  />
+              {!isEditingAkademik ? (
+                // View Mode
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] space-y-1">
+                    <span className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tahun Ajaran Aktif</span>
+                    <p className="text-[14px] font-bold text-[var(--text-primary)]">{activeTaLabel}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] space-y-1">
+                    <span className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Semester Ganjil</span>
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)]">
+                      {akademik.tanggalMulaiGanjil || "—"} s.d. {akademik.tanggalSelesaiGanjil || "—"}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] space-y-1 sm:col-span-2">
+                    <span className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Semester Genap</span>
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)]">
+                      {akademik.tanggalMulaiGenap || "—"} s.d. {akademik.tanggalSelesaiGenap || "—"}
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-[var(--text-secondary)]">Selesai Semester Genap</label>
-                  <input
-                    type="date"
-                    value={akademik.tanggalSelesaiGenap}
-                    onChange={(e) => setAkademik({ ...akademik, tanggalSelesaiGenap: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
-                  />
-                </div>
-              </div>
+              ) : (
+                // Edit Mode
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-[var(--text-secondary)]">Pilih Tahun Ajaran Aktif</label>
+                    <select
+                      value={akademik.tahunAjaranId}
+                      onChange={(e) => setAkademik({ ...akademik, tahunAjaranId: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
+                    >
+                      <option value="">-- Pilih Tahun Ajaran --</option>
+                      {tahunAjaranList.map((ta) => (
+                        <option key={ta.id} value={ta.id}>{ta.label}</option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div className="pt-3">
-                <button
-                  onClick={() => saveSettings("CONFIG_AKADEMIK", akademik)}
-                  disabled={saving}
-                  className="px-5 py-2.5 text-white rounded-[var(--radius-md)] text-[13px] font-bold shadow-sm transition-all flex items-center gap-2"
-                  style={{ backgroundColor: "var(--primary)" }}
-                >
-                  {saving && <Loader2 size={14} className="animate-spin" />} Simpan Pengaturan Akademik
-                </button>
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-[var(--text-secondary)]">Mulai Semester Ganjil</label>
+                      <input
+                        type="date"
+                        value={akademik.tanggalMulaiGanjil}
+                        onChange={(e) => setAkademik({ ...akademik, tanggalMulaiGanjil: e.target.value })}
+                        className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-[var(--text-secondary)]">Selesai Semester Ganjil</label>
+                      <input
+                        type="date"
+                        value={akademik.tanggalSelesaiGanjil}
+                        onChange={(e) => setAkademik({ ...akademik, tanggalSelesaiGanjil: e.target.value })}
+                        className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-[var(--text-secondary)]">Mulai Semester Genap</label>
+                      <input
+                        type="date"
+                        value={akademik.tanggalMulaiGenap}
+                        onChange={(e) => setAkademik({ ...akademik, tanggalMulaiGenap: e.target.value })}
+                        className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-[var(--text-secondary)]">Selesai Semester Genap</label>
+                      <input
+                        type="date"
+                        value={akademik.tanggalSelesaiGenap}
+                        onChange={(e) => setAkademik({ ...akademik, tanggalSelesaiGenap: e.target.value })}
+                        className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-3 flex items-center gap-3">
+                    <button
+                      onClick={() => saveSettings("CONFIG_AKADEMIK", akademik)}
+                      disabled={saving}
+                      className="px-5 py-2.5 text-white rounded-[var(--radius-md)] text-[13px] font-bold shadow-sm transition-all flex items-center gap-2"
+                      style={{ backgroundColor: "var(--primary)" }}
+                    >
+                      {saving && <Loader2 size={14} className="animate-spin" />} Simpan Perubahan Akademik
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingAkademik(false);
+                        fetchSettings();
+                      }}
+                      className="px-4 py-2.5 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] text-[13px] font-bold rounded-[var(--radius-md)] hover:text-[var(--text-primary)] transition-colors"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === "cms" && (
-            <div className="space-y-4">
-              <h2 className="text-sm font-bold text-[var(--text-primary)]">Branding Aplikasi & Tab Browser</h2>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-[var(--text-secondary)]">Nama Aplikasi (Brand)</label>
-                <input
-                  type="text"
-                  value={cms.namaAplikasi}
-                  onChange={e => setCms({...cms, namaAplikasi: e.target.value})}
-                  className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
-                  placeholder="Nama Aplikasi"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-[var(--text-secondary)]">Judul Tab Browser (Title Tab)</label>
-                <input
-                  type="text"
-                  value={cms.titleTab}
-                  onChange={e => setCms({...cms, titleTab: e.target.value})}
-                  className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
-                  placeholder="Contoh: Portal Akademik | Absensi Sekolah"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-[var(--text-secondary)]">Logo Brand & Icon (Sidebar, Login & Favicon Tab)</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    value={cms.logoUrl}
-                    onChange={e => setCms({...cms, logoUrl: e.target.value})}
-                    className="flex-1 px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
-                    placeholder="https://example.com/logo.png atau unggah ke Cloudinary"
-                  />
-                  <label className="px-4 py-2.5 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-primary)] text-[12px] font-bold rounded-[var(--radius-md)] hover:bg-[var(--border)] cursor-pointer transition-colors shrink-0">
-                    {uploadingLogo ? "Mengunggah..." : "Upload ke Cloudinary"}
-                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                  </label>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+                <div>
+                  <h2 className="text-sm font-bold text-[var(--text-primary)]">Branding Aplikasi & Tab Browser</h2>
+                  <p className="text-[12px] text-[var(--text-secondary)]">Kelola nama aplikasi, judul tab browser, dan logo identitas instansi.</p>
                 </div>
-                {cms.logoUrl && (
-                  <div className="mt-2 flex items-center gap-3 p-3 bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl">
-                    <img src={cms.logoUrl} alt="Preview Logo & Icon" className="w-10 h-10 object-cover rounded-lg border border-[var(--border)]" />
-                    <span className="text-[12px] text-[var(--text-secondary)] truncate">Preview Logo & Icon Tab Aktif</span>
-                  </div>
-                )}
+                <div>
+                  {!isEditingCms ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingCms(true)}
+                      className="px-4 py-1.5 text-white text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5"
+                      style={{ backgroundColor: "var(--primary)" }}
+                    >
+                      <Pencil size={13} /> Edit Branding
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingCms(false);
+                        fetchSettings();
+                      }}
+                      className="px-3 py-1.5 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] text-[11px] font-bold rounded-lg hover:text-[var(--text-primary)] transition-colors flex items-center gap-1"
+                    >
+                      <X size={13} /> Batal
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div className="pt-3">
-                <button
-                  onClick={() => saveSettings("CONFIG_APP", cms)}
-                  disabled={saving}
-                  className="px-5 py-2.5 text-white rounded-[var(--radius-md)] text-[13px] font-bold shadow-sm transition-all flex items-center gap-2"
-                  style={{ backgroundColor: "var(--primary)" }}
-                >
-                  {saving && <Loader2 size={14} className="animate-spin" />} Simpan Pengaturan Branding
-                </button>
-              </div>
+              {!isEditingCms ? (
+                // View Mode CMS
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] space-y-1">
+                    <span className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Nama Aplikasi (Brand)</span>
+                    <p className="text-[14px] font-bold text-[var(--text-primary)]">{cms.namaAplikasi || "—"}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] space-y-1">
+                    <span className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Judul Tab Browser (Title Tab)</span>
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)]">{cms.titleTab || "—"}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] space-y-2">
+                    <span className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Logo & Icon Instansi</span>
+                    {cms.logoUrl ? (
+                      <div className="flex items-center gap-3">
+                        <img src={cms.logoUrl} alt="Logo" className="w-12 h-12 object-cover rounded-xl border border-[var(--border)] shadow-sm" />
+                        <span className="text-[12px] text-[var(--text-secondary)] font-mono truncate">{cms.logoUrl}</span>
+                      </div>
+                    ) : (
+                      <p className="text-[12px] text-[var(--text-tertiary)] italic">Belum ada logo yang diatur.</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                // Edit Mode CMS
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-[var(--text-secondary)]">Nama Aplikasi (Brand)</label>
+                    <input
+                      type="text"
+                      value={cms.namaAplikasi}
+                      onChange={e => setCms({...cms, namaAplikasi: e.target.value})}
+                      className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
+                      placeholder="Nama Aplikasi"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-[var(--text-secondary)]">Judul Tab Browser (Title Tab)</label>
+                    <input
+                      type="text"
+                      value={cms.titleTab}
+                      onChange={e => setCms({...cms, titleTab: e.target.value})}
+                      className="w-full px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
+                      placeholder="Contoh: Portal Akademik | Absensi Sekolah"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-[var(--text-secondary)]">Logo Brand & Icon (Sidebar, Login & Favicon Tab)</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        value={cms.logoUrl}
+                        onChange={e => setCms({...cms, logoUrl: e.target.value})}
+                        className="flex-1 px-3.5 py-2.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] rounded-[var(--radius-md)] text-[13px]"
+                        placeholder="https://example.com/logo.png atau unggah ke Cloudinary"
+                      />
+                      <label className="px-4 py-2.5 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-primary)] text-[12px] font-bold rounded-[var(--radius-md)] hover:bg-[var(--border)] cursor-pointer transition-colors shrink-0">
+                        {uploadingLogo ? "Mengunggah..." : "Upload ke Cloudinary"}
+                        <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                      </label>
+                    </div>
+                    {cms.logoUrl && (
+                      <div className="mt-2 flex items-center gap-3 p-3 bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl">
+                        <img src={cms.logoUrl} alt="Preview Logo & Icon" className="w-10 h-10 object-cover rounded-lg border border-[var(--border)]" />
+                        <span className="text-[12px] text-[var(--text-secondary)] truncate">Preview Logo & Icon Tab Aktif</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-3 flex items-center gap-3">
+                    <button
+                      onClick={() => saveSettings("CONFIG_APP", cms)}
+                      disabled={saving}
+                      className="px-5 py-2.5 text-white rounded-[var(--radius-md)] text-[13px] font-bold shadow-sm transition-all flex items-center gap-2"
+                      style={{ backgroundColor: "var(--primary)" }}
+                    >
+                      {saving && <Loader2 size={14} className="animate-spin" />} Simpan Perubahan Branding
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingCms(false);
+                        fetchSettings();
+                      }}
+                      className="px-4 py-2.5 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] text-[13px] font-bold rounded-[var(--radius-md)] hover:text-[var(--text-primary)] transition-colors"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

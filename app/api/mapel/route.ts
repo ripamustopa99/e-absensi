@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import * as mapelService from "@/lib/services/mapel.service";
 import { mapelCreateSchema } from "@/lib/validations";
-
 import { JWT_SECRET } from "@/lib/jwt";
+import { logActivity } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -51,6 +51,11 @@ export async function POST(request: Request) {
     }
 
     const created = await mapelService.createMapel(parsed.data);
+
+    const forwarded = request.headers.get("x-forwarded-for");
+    const ip = forwarded ? forwarded.split(/,\s*/)[0] : request.headers.get("x-real-ip") || "127.0.0.1";
+    await logActivity(payload.id as string, "TAMBAH_MAPEL", "Mapel", { nama: parsed.data.nama }, ip);
+
     return NextResponse.json({ success: true, data: created, message: "Mata pelajaran berhasil ditambahkan" });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Server error";

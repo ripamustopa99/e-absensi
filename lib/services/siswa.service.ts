@@ -9,30 +9,7 @@ const TINGKAT_RANKS: Record<string, number> = {
   'XII': 6,
 };
 
-async function ensureSiswaTablesExist() {
-  try {
-    await query(`
-      CREATE TABLE IF NOT EXISTS "riwayat_siswa" (
-        id TEXT PRIMARY KEY,
-        "siswaId" TEXT NOT NULL,
-        jenjang TEXT NOT NULL,
-        tingkat TEXT NOT NULL,
-        "tahunAjaranId" TEXT NOT NULL,
-        status TEXT NOT NULL,
-        "createdAt" TIMESTAMP DEFAULT NOW()
-      );
-    `);
-  } catch {}
 
-  // Forcefully drop global unique constraint / index on nisn with CASCADE
-  try {
-    await query(`DROP INDEX IF EXISTS siswa_nisn_key CASCADE;`);
-    await query(`DROP INDEX IF EXISTS "siswa_nisn_key" CASCADE;`);
-    await query(`ALTER TABLE siswa DROP CONSTRAINT IF EXISTS siswa_nisn_key CASCADE;`);
-    await query(`ALTER TABLE siswa DROP CONSTRAINT IF EXISTS "siswa_nisn_key" CASCADE;`);
-    await query(`CREATE UNIQUE INDEX IF NOT EXISTS siswa_nisn_jenjang_key ON siswa(nisn, jenjang);`);
-  } catch {}
-}
 
 async function syncRiwayatSiswa(siswaId: string, jenjang: string, newTingkat: string, newStatus: string, tahunAjaranId?: string) {
   if (!tahunAjaranId) {
@@ -56,8 +33,8 @@ async function syncRiwayatSiswa(siswaId: string, jenjang: string, newTingkat: st
     return;
   }
 
-  const maxExistingRank = Math.max(...existing.map(r => TINGKAT_RANKS[r.tingkat] || 0));
-  const minExistingRank = Math.min(...existing.map(r => TINGKAT_RANKS[r.tingkat] || 0));
+  const maxExistingRank = Math.max(...existing.map((r: any) => TINGKAT_RANKS[r.tingkat] || 0));
+  const minExistingRank = Math.min(...existing.map((r: any) => TINGKAT_RANKS[r.tingkat] || 0));
 
   if (newRank < maxExistingRank) {
     // Downgrade: delete any riwayat with rank > newRank
@@ -74,7 +51,7 @@ async function syncRiwayatSiswa(siswaId: string, jenjang: string, newTingkat: st
     for (let r = baseRank; r <= Math.min(newRank, maxLimitRank); r++) {
       const tName = Object.keys(TINGKAT_RANKS).find(key => TINGKAT_RANKS[key] === r);
       if (tName) {
-        const exists = existing.some(e => e.tingkat === tName);
+        const exists = existing.some((e: any) => e.tingkat === tName);
         if (!exists) {
           await query(
             `INSERT INTO riwayat_siswa (id, "siswaId", jenjang, tingkat, "tahunAjaranId", status, "createdAt")
@@ -108,8 +85,6 @@ export async function getSiswaList(filters?: {
   page?: number;
   limit?: number;
 }) {
-  await ensureSiswaTablesExist();
-
   let whereClauses = [`1=1`];
   const params: any[] = [];
 
@@ -155,53 +130,61 @@ export async function getSiswaList(filters?: {
   const sql = `SELECT * FROM siswa WHERE ${whereStr} ORDER BY nama ASC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
   const dataRes = await query(sql, [...params, limit, offset]);
 
-  const dataWithRiwayat = await Promise.all(
-    dataRes.rows.map(async (s) => {
-      let riwayatRows = [];
-      try {
-        const riwayatRes = await query(
-          `SELECT id, jenjang, tingkat, status, "createdAt" 
-           FROM riwayat_siswa 
-           WHERE "siswaId" = $1 
-           ORDER BY 
-             CASE tingkat 
-               WHEN 'VII' THEN 1 
-               WHEN 'VIII' THEN 2 
-               WHEN 'IX' THEN 3 
-               WHEN 'X' THEN 4 
-               WHEN 'XI' THEN 5 
-               WHEN 'XII' THEN 6 
-               ELSE 7 
-             END ASC, 
-             "createdAt" ASC`,
-          [s.id]
-        );
-        const seenTingkat = new Set();
-        riwayatRows = riwayatRes.rows.filter(r => {
-          if (seenTingkat.has(r.tingkat)) return false;
-          seenTingkat.add(r.tingkat);
-          return true;
-        });
-      } catch {}
+  const studentIds = dataRes.rows.map((s: any) => s.id);
+  let allRiwayat: any[] = [];
+  if (studentIds.length > 0) {
+    try {
+      const riwayatRes = await query(
+        `SELECT id, "siswaId", jenjang, tingkat, status, "createdAt" 
+         FROM riwayat_siswa 
+         WHERE "siswaId" = ANY($1::text[]) 
+         ORDER BY 
+           CASE tingkat 
+             WHEN 'VII' THEN 1 
+             WHEN 'VIII' THEN 2 
+             WHEN 'IX' THEN 3 
+             WHEN 'X' THEN 4 
+             WHEN 'XI' THEN 5 
+             WHEN 'XII' THEN 6 
+             ELSE 7 
+           END ASC, 
+           "createdAt" ASC`,
+        [studentIds]
+      );
+      allRiwayat = riwayatRes.rows;
+    } catch (e: any) {}
+  }
 
-      if (riwayatRows.length === 0) {
-        riwayatRows = [
-          {
-            id: "fallback-" + s.id,
-            jenjang: s.jenjang,
-            tingkat: s.tingkat,
-            status: s.status,
-            createdAt: s.createdAt || new Date(),
-          },
-        ];
-      }
+  const riwayatMap = new Map<string, any[]>();
+  for (const r of allRiwayat) {
+    if (!riwayatMap.has(r.siswaId)) {
+      riwayatMap.set(r.siswaId, []);
+    }
+    const list = riwayatMap.get(r.siswaId)!;
+    if (!list.some((item: any) => item.tingkat === r.tingkat)) {
+      list.push(r);
+    }
+  }
 
-      return {
-        ...s,
-        riwayat: riwayatRows,
-      };
-    })
-  );
+  const dataWithRiwayat = dataRes.rows.map((s: any) => {
+    let riwayatRows = riwayatMap.get(s.id) || [];
+    if (riwayatRows.length === 0) {
+      riwayatRows = [
+        {
+          id: "fallback-" + s.id,
+          jenjang: s.jenjang,
+          tingkat: s.tingkat,
+          status: s.status,
+          createdAt: s.createdAt || new Date(),
+        },
+      ];
+    }
+
+    return {
+      ...s,
+      riwayat: riwayatRows,
+    };
+  });
 
   return {
     data: dataWithRiwayat,
@@ -217,13 +200,11 @@ export async function createSiswa(data: {
   nama: string;
   jenjang: string;
   tingkat: string;
-  jenisKelamin?: string;
-  tanggalLahir?: string;
-  namaOrangTua?: string;
+  jenisKelamin?: string | null;
+  tanggalLahir?: string | null;
+  namaOrangTua?: string | null;
   status?: string;
 }) {
-  await ensureSiswaTablesExist();
-
   if (!data.nisn || !data.nama || !data.jenjang || !data.tingkat) {
     throw new Error("NISN, Nama, Jenjang, dan Tingkat wajib diisi");
   }
@@ -271,8 +252,6 @@ export async function createSiswa(data: {
 }
 
 export async function updateSiswa(id: string, data: any) {
-  await ensureSiswaTablesExist();
-
   if (!id) throw new Error("ID siswa tidak valid");
 
   const currentRes = await query(`SELECT * FROM siswa WHERE id = $1 LIMIT 1`, [id]);
@@ -418,8 +397,6 @@ export async function luluskanSiswaBatch(ids: string[]) {
 }
 
 export async function importMaFromMts(ids: string[]) {
-  await ensureSiswaTablesExist();
-
   if (!ids || ids.length === 0) throw new Error("Tidak ada siswa MTs yang dipilih untuk diimpor ke MA");
 
   const taRes = await query(`SELECT id FROM tahun_ajaran WHERE "isAktif" = true LIMIT 1`);

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { query } from "@/lib/db";
-
 import { JWT_SECRET } from "@/lib/jwt";
 
 export async function GET(request: Request) {
@@ -27,7 +26,6 @@ export async function GET(request: Request) {
     const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 10;
     const offset = (page - 1) * limit;
 
-    // Get date range from tahun_ajaran
     let tanggalMulai = "";
     let tanggalSelesai = "";
 
@@ -51,93 +49,119 @@ export async function GET(request: Request) {
       }
     }
 
+    if (!tanggalMulai || !tanggalSelesai) {
+      const now = new Date();
+      const year = now.getFullYear();
+      tanggalMulai = `${year}-01-01`;
+      tanggalSelesai = `${year}-12-31`;
+    }
+
     let sql = `
-      SELECT 
-        ag."jadwalId",
-        TO_CHAR(ag.tanggal, 'YYYY-MM-DD') as tanggal,
-        ag.status,
-        ag."waktuAbsen",
-        j.hari,
-        CASE j.hari 
-          WHEN 1 THEN 'Senin'
-          WHEN 2 THEN 'Selasa'
-          WHEN 3 THEN 'Rabu'
-          WHEN 4 THEN 'Kamis'
-          WHEN 5 THEN 'Jumat'
-          WHEN 6 THEN 'Sabtu'
-          WHEN 7 THEN 'Minggu'
-          ELSE 'Senin'
-        END as "namaHari",
-        j."jamMulai",
-        j."jamSelesai",
-        m.nama as mapel,
-        COALESCE(
-          (SELECT string_agg(jt.tingkat, ', ') FROM jadwal_tingkat jt WHERE jt."jadwalMengajarId" = j.id),
-          j.jenjang::text
-        ) as kelas,
-        j.jenjang::text as jenjang,
-        COUNT(*) OVER() as full_count
-      FROM absensi_guru ag
-      JOIN jadwal_mengajar j ON ag."jadwalId" = j.id
-      JOIN mapel m ON j."mapelId" = m.id
-      WHERE ag."guruId" = $1
+      WITH scheduled_sessions AS (
+        SELECT 
+          j.id as "jadwalId",
+          TO_CHAR(d.date::date, 'YYYY-MM-DD') as tanggal,
+          COALESCE(
+            ag.status::text,
+            CASE WHEN d.date::date < CURRENT_DATE THEN 'ALPA' ELSE 'BELUM_ABSEN' END
+          ) as status,
+          ag."waktuAbsen",
+          j.hari,
+          CASE j.hari 
+            WHEN 1 THEN 'Senin'
+            WHEN 2 THEN 'Selasa'
+            WHEN 3 THEN 'Rabu'
+            WHEN 4 THEN 'Kamis'
+            WHEN 5 THEN 'Jumat'
+            WHEN 6 THEN 'Sabtu'
+            WHEN 7 THEN 'Minggu'
+            ELSE 'Senin'
+          END as "namaHari",
+          j."jamMulai",
+          j."jamSelesai",
+          m.nama as mapel,
+          COALESCE(
+            (SELECT string_agg(jt.tingkat, ', ') FROM jadwal_tingkat jt WHERE jt."jadwalMengajarId" = j.id),
+            j.jenjang::text
+          ) as kelas,
+          j.jenjang::text as jenjang
+        FROM jadwal_mengajar j
+        CROSS JOIN LATERAL generate_series($2::date, $3::date, '1 day'::interval) d(date)
+        JOIN mapel m ON j."mapelId" = m.id
+        LEFT JOIN absensi_guru ag ON ag."jadwalId" = j.id AND ag.tanggal = d.date::date
+        WHERE (j."guruId" = $1 OR j."guruPenggantiId" = $1)
+          AND EXTRACT(ISODOW FROM d.date::date) = j.hari
+          AND NOT EXISTS (
+            SELECT 1 FROM kalender_akademik ka 
+            WHERE ka.tanggal = d.date::date AND ka.jenis = 'LIBUR_NASIONAL'
+          )
+      )
+      SELECT *, COUNT(*) OVER() as full_count
+      FROM scheduled_sessions
+      WHERE 1=1
     `;
 
-    const params: any[] = [userId];
-
-    if (tanggalMulai && tanggalSelesai) {
-      params.push(tanggalMulai);
-      sql += ` AND ag.tanggal >= $${params.length}`;
-      params.push(tanggalSelesai);
-      sql += ` AND ag.tanggal <= $${params.length}`;
-    }
+    const params: any[] = [userId, tanggalMulai, tanggalSelesai];
 
     if (bulan !== "Semua") {
       params.push(parseInt(bulan, 10));
-      sql += ` AND EXTRACT(MONTH FROM ag.tanggal) = $${params.length}`;
+      sql += ` AND EXTRACT(MONTH FROM tanggal::date) = $${params.length}`;
     }
 
     if (status !== "Semua") {
-      params.push(status);
-      sql += ` AND ag.status = $${params.length}`;
+      if (status === "HADIR") {
+        sql += ` AND status = 'HADIR'`;
+      } else if (status === "TIDAK_HADIR") {
+        sql += ` AND status != 'HADIR'`;
+      } else {
+        params.push(status);
+        sql += ` AND status = $${params.length}`;
+      }
     }
 
     if (jenjang !== "Semua") {
       params.push(jenjang);
-      sql += ` AND j.jenjang::text = $${params.length}`;
+      sql += ` AND jenjang = $${params.length}`;
     }
 
-    sql += ` ORDER BY ag.tanggal DESC, j."jamMulai" DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    sql += ` ORDER BY tanggal DESC, "jamMulai" DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(limit, offset);
 
     const result = await query(sql, params);
     const totalItems = result.rows.length > 0 ? parseInt(result.rows[0].full_count, 10) : 0;
     const totalPages = Math.ceil(totalItems / limit) || 1;
 
-    // Calculate stats
     let statsSql = `
+      WITH scheduled_sessions AS (
+        SELECT 
+          COALESCE(
+            ag.status::text,
+            CASE WHEN d.date::date < CURRENT_DATE THEN 'ALPA' ELSE 'BELUM_ABSEN' END
+          ) as status
+        FROM jadwal_mengajar j
+        CROSS JOIN LATERAL generate_series($2::date, $3::date, '1 day'::interval) d(date)
+        LEFT JOIN absensi_guru ag ON ag."jadwalId" = j.id AND ag.tanggal = d.date::date
+        WHERE (j."guruId" = $1 OR j."guruPenggantiId" = $1)
+          AND EXTRACT(ISODOW FROM d.date::date) = j.hari
+          AND NOT EXISTS (
+            SELECT 1 FROM kalender_akademik ka 
+            WHERE ka.tanggal = d.date::date AND ka.jenis = 'LIBUR_NASIONAL'
+          )
+      )
       SELECT 
         COUNT(*) as total_expected,
-        SUM(CASE WHEN ag.status = 'HADIR' THEN 1 ELSE 0 END) as total_hadir,
-        SUM(CASE WHEN ag.status != 'HADIR' THEN 1 ELSE 0 END) as total_tidak_hadir
-      FROM absensi_guru ag
-      JOIN jadwal_mengajar j ON ag."jadwalId" = j.id
-      WHERE ag."guruId" = $1
+        SUM(CASE WHEN status = 'HADIR' THEN 1 ELSE 0 END) as total_hadir,
+        SUM(CASE WHEN status != 'HADIR' THEN 1 ELSE 0 END) as total_tidak_hadir
+      FROM scheduled_sessions
     `;
-    const statsParams: any[] = [userId];
-    if (tanggalMulai && tanggalSelesai) {
-      statsParams.push(tanggalMulai, tanggalSelesai);
-      statsSql += ` AND ag.tanggal >= $2 AND ag.tanggal <= $3`;
-    }
-
-    const statsRes = await query(statsSql, statsParams);
+    const statsRes = await query(statsSql, [userId, tanggalMulai, tanggalSelesai]);
     const rowStats = statsRes.rows[0] || {};
     const totalExpected = parseInt(rowStats.total_expected || 0, 10);
     const totalHadir = parseInt(rowStats.total_hadir || 0, 10);
     const totalTidakHadir = parseInt(rowStats.total_tidak_hadir || 0, 10);
     const persentase = totalExpected > 0 ? Math.round((totalHadir / totalExpected) * 100) : 100;
 
-    const details = result.rows.map((r) => ({
+    const details = result.rows.map((r: any) => ({
       tanggal: r.tanggal,
       jadwalId: r.jadwalId,
       hari: r.hari,
@@ -147,7 +171,7 @@ export async function GET(request: Request) {
       mapel: r.mapel,
       kelas: r.kelas,
       jenjang: r.jenjang,
-      status: r.status === "HADIR" ? "HADIR" : "TIDAK_HADIR",
+      status: r.status,
       waktuAbsen: r.waktuAbsen,
     }));
 

@@ -1,22 +1,9 @@
 import { query } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
-async function ensureUserTablesExist() {
-  try {
-    await query(`
-      CREATE TABLE IF NOT EXISTS "guru_wali_tingkat" (
-        id TEXT PRIMARY KEY,
-        "userId" TEXT NOT NULL,
-        jenjang TEXT NOT NULL,
-        tingkat TEXT NOT NULL
-      );
-    `);
-  } catch {}
-}
+
 
 export async function getUsersList(filters?: { role?: string; search?: string; page?: number; limit?: number; isAktif?: string }) {
-  await ensureUserTablesExist();
-
   let whereClauses = [`role = 'GURU'`];
   const params: any[] = [];
 
@@ -49,23 +36,32 @@ export async function getUsersList(filters?: { role?: string; search?: string; p
   
   const dataRes = await query(sql, [...params, limit, offset]);
 
-  const usersWithWali = await Promise.all(
-    dataRes.rows.map(async (user) => {
-      let wkRows = [];
-      try {
-        const wkRes = await query(
-          `SELECT id, jenjang, tingkat FROM guru_wali_tingkat WHERE "userId" = $1`,
-          [user.id]
-        );
-        wkRows = wkRes.rows;
-      } catch {}
+  const userIds = dataRes.rows.map((u: any) => u.id);
+  let allWali: any[] = [];
+  if (userIds.length > 0) {
+    try {
+      const wkRes = await query(
+        `SELECT id, "userId", jenjang, tingkat FROM guru_wali_tingkat WHERE "userId" = ANY($1::text[])`,
+        [userIds]
+      );
+      allWali = wkRes.rows;
+    } catch (u: any) {}
+  }
 
-      return {
-        ...user,
-        waliTingkat: wkRows,
-      };
-    })
-  );
+  const waliMap = new Map<string, any[]>();
+  for (const w of allWali) {
+    if (!waliMap.has(w.userId)) {
+      waliMap.set(w.userId, []);
+    }
+    waliMap.get(w.userId)!.push({ id: w.id, jenjang: w.jenjang, tingkat: w.tingkat });
+  }
+
+  const usersWithWali = dataRes.rows.map((user: any) => {
+    return {
+      ...user,
+      waliTingkat: waliMap.get(user.id) || [],
+    };
+  });
 
   return {
     data: usersWithWali,
@@ -95,15 +91,13 @@ export async function createUser(data: {
   password?: string;
   nama: string;
   role?: string;
-  jabatan?: string;
-  noTelp?: string;
-  jenisKelamin?: string;
-  tempatLahir?: string;
-  tanggalLahir?: string;
+  jabatan?: string | null;
+  noTelp?: string | null;
+  jenisKelamin?: string | null;
+  tempatLahir?: string | null;
+  tanggalLahir?: string | null;
   waliTingkat?: { jenjang: "MTS" | "MA"; tingkat: string }[];
 }) {
-  await ensureUserTablesExist();
-
   if (data.waliTingkat && data.waliTingkat.length > 0) {
     await validateWaliTingkat(data.waliTingkat);
   }
@@ -154,8 +148,6 @@ export async function createUser(data: {
 }
 
 export async function updateUser(id: string, data: any) {
-  await ensureUserTablesExist();
-
   let hashedPassword = undefined;
   if (data.password) {
     hashedPassword = await bcrypt.hash(data.password, 10);

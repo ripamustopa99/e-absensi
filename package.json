@@ -10,7 +10,7 @@
     "db:seed": "prisma db seed"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "node prisma/seed-pg.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.5.7",

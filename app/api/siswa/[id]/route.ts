@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import * as siswaService from "@/lib/services/siswa.service";
 import { siswaUpdateSchema } from "@/lib/validations";
-
 import { JWT_SECRET } from "@/lib/jwt";
+import { logActivity } from "@/lib/logger";
 
 export async function PUT(
   request: Request,
@@ -30,6 +30,11 @@ export async function PUT(
     }
 
     const updated = await siswaService.updateSiswa(id, parsed.data);
+
+    const forwarded = request.headers.get("x-forwarded-for");
+    const ip = forwarded ? forwarded.split(/,\s*/)[0] : request.headers.get("x-real-ip") || "127.0.0.1";
+    await logActivity(payload.id as string, "UPDATE_SISWA", "Siswa", { id, ...parsed.data }, ip);
+
     return NextResponse.json({ success: true, data: updated, message: "Data siswa berhasil diubah" });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Server error";
@@ -55,6 +60,11 @@ export async function DELETE(
     }
 
     await siswaService.deleteSiswa(id);
+
+    const forwarded = request.headers.get("x-forwarded-for");
+    const ip = forwarded ? forwarded.split(/,\s*/)[0] : request.headers.get("x-real-ip") || "127.0.0.1";
+    await logActivity(payload.id as string, "HAPUS_SISWA", "Siswa", { id }, ip);
+
     return NextResponse.json({ success: true, message: "Siswa berhasil dihapus" });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Server error";

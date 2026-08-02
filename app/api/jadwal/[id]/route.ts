@@ -54,7 +54,7 @@ export async function GET(
       `SELECT tingkat FROM jadwal_tingkat WHERE "jadwalMengajarId" = $1`,
       [id]
     );
-    const tingkatNames = tingkatRes.rows.map((t) => t.tingkat);
+    const tingkatNames = tingkatRes.rows.map((t: any) => t.tingkat);
 
     let siswaRes;
     if (tingkatNames.length > 0) {

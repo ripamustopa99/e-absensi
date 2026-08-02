@@ -11,34 +11,7 @@ const HARI_MAP: Record<number, string> = {
   7: "Minggu",
 };
 
-async function ensureJadwalTablesExist() {
-  try {
-    await query(`
-      CREATE TABLE IF NOT EXISTS "jadwal_mengajar" (
-        id TEXT PRIMARY KEY,
-        "guruId" TEXT NOT NULL,
-        "guruPenggantiId" TEXT,
-        "mapelId" TEXT NOT NULL,
-        jenjang TEXT NOT NULL,
-        semester TEXT NOT NULL,
-        hari INT NOT NULL,
-        "jamMulai" TEXT NOT NULL,
-        "jamSelesai" TEXT NOT NULL,
-        "tahunAjaranId" TEXT NOT NULL
-      );
-    `);
-  } catch {}
 
-  try {
-    await query(`
-      CREATE TABLE IF NOT EXISTS "jadwal_tingkat" (
-        id TEXT PRIMARY KEY,
-        "jadwalMengajarId" TEXT NOT NULL,
-        tingkat TEXT NOT NULL
-      );
-    `);
-  } catch {}
-}
 
 export async function getAdminJadwalList(filters?: {
   jenjang?: string;
@@ -49,7 +22,6 @@ export async function getAdminJadwalList(filters?: {
   page?: number;
   limit?: number;
 }) {
-  await ensureJadwalTablesExist();
   await ensureDefaultTahunAjaran();
 
   try {
@@ -112,24 +84,33 @@ export async function getAdminJadwalList(filters?: {
 
     const result = await query(sql, [...params, limit, offset]);
 
-    const data = await Promise.all(
-      result.rows.map(async (row) => {
-        let tingkatRows = [];
-        try {
-          const tingkatRes = await query(
-            `SELECT tingkat FROM jadwal_tingkat WHERE "jadwalMengajarId" = $1`,
-            [row.id],
-          );
-          tingkatRows = tingkatRes.rows;
-        } catch {}
+    const jadwalIds = result.rows.map((r: any) => r.id);
+    let allTingkat: any[] = [];
+    if (jadwalIds.length > 0) {
+      try {
+        const tingkatRes = await query(
+          `SELECT "jadwalMengajarId", tingkat FROM jadwal_tingkat WHERE "jadwalMengajarId" = ANY($1::text[])`,
+          [jadwalIds],
+        );
+        allTingkat = tingkatRes.rows;
+      } catch (r: any) {}
+    }
 
-        return {
-          ...row,
-          namaHari: HARI_MAP[row.hari] || "Hari",
-          tingkatList: tingkatRows,
-        };
-      }),
-    );
+    const tingkatMap = new Map<string, any[]>();
+    for (const t of allTingkat) {
+      if (!tingkatMap.has(t.jadwalMengajarId)) {
+        tingkatMap.set(t.jadwalMengajarId, []);
+      }
+      tingkatMap.get(t.jadwalMengajarId)!.push({ tingkat: t.tingkat });
+    }
+
+    const data = result.rows.map((row: any) => {
+      return {
+        ...row,
+        namaHari: HARI_MAP[row.hari] || "Hari",
+        tingkatList: tingkatMap.get(row.id) || [],
+      };
+    });
 
     return {
       data,
@@ -145,7 +126,6 @@ export async function getAdminJadwalList(filters?: {
 }
 
 export async function getFormOptions() {
-  await ensureJadwalTablesExist();
   await ensureDefaultTahunAjaran();
 
   const guruRes = await query(
@@ -180,8 +160,6 @@ export async function createJadwal(data: {
   jamMulai: string;
   jamSelesai: string;
 }) {
-  await ensureJadwalTablesExist();
-
   const currentContext = await getCurrentAcademicContext();
   const tahunAjaranId = data.tahunAjaranId || currentContext.tahunAjaranId;
   const semester = data.semester || currentContext.semester;
@@ -270,19 +248,17 @@ export async function createJadwal(data: {
 export async function updateJadwal(
   id: string,
   data: {
-    guruId: string;
-    mapelId: string;
-    jenjang: string;
+    guruId?: string;
+    mapelId?: string;
+    jenjang?: string;
     semester?: string;
-    tingkatList: string[];
+    tingkatList?: string[];
     tahunAjaranId?: string;
-    hari: number;
-    jamMulai: string;
-    jamSelesai: string;
+    hari?: number;
+    jamMulai?: string;
+    jamSelesai?: string;
   },
 ) {
-  await ensureJadwalTablesExist();
-
   if (!id) throw new Error("ID jadwal tidak valid");
 
   if (data.tingkatList && data.tingkatList.length > 0) {
@@ -393,8 +369,6 @@ export async function importJadwal(data: {
   sourceTahunAjaranId: string;
   targetTahunAjaranId: string;
 }) {
-  await ensureJadwalTablesExist();
-
   if (!data.sourceTahunAjaranId || !data.targetTahunAjaranId) {
     throw new Error("Tahun ajaran sumber dan tujuan wajib dipilih");
   }
