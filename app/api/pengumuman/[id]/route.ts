@@ -6,6 +6,7 @@ import { query } from "@/lib/db";
 import { JWT_SECRET } from "@/lib/jwt";
 import { pengumumanUpdateSchema } from "@/lib/validations";
 import { logActivity } from "@/lib/logger";
+import { deleteCloudinaryImage } from "@/lib/cloudinary";
 
 export async function PUT(
   request: Request,
@@ -32,6 +33,9 @@ export async function PUT(
 
     const { judul, isi, targetJenjang, pinned, foto, tahunAjaranId, isPublished } = parsed.data;
 
+    const oldRes = await query(`SELECT foto FROM pengumuman WHERE id = $1`, [id]);
+    const oldFoto = oldRes.rows[0]?.foto;
+
     await query(
       `UPDATE pengumuman
        SET judul = COALESCE($1, judul),
@@ -53,6 +57,10 @@ export async function PUT(
         id,
       ]
     );
+
+    if (foto !== undefined && oldFoto && oldFoto !== foto) {
+      await deleteCloudinaryImage(oldFoto);
+    }
 
     const forwarded = request.headers.get("x-forwarded-for");
     const ip = forwarded ? forwarded.split(/,\s*/)[0] : request.headers.get("x-real-ip") || "127.0.0.1";
@@ -82,7 +90,14 @@ export async function DELETE(
       return NextResponse.json({ success: false, message: "Forbidden: Hanya Admin yang dapat menghapus pengumuman" }, { status: 403 });
     }
 
+    const oldRes = await query(`SELECT foto FROM pengumuman WHERE id = $1`, [id]);
+    const oldFoto = oldRes.rows[0]?.foto;
+
     await query(`DELETE FROM pengumuman WHERE id = $1`, [id]);
+
+    if (oldFoto) {
+      await deleteCloudinaryImage(oldFoto);
+    }
 
     const forwarded = request.headers.get("x-forwarded-for");
     const ip = forwarded ? forwarded.split(/,\s*/)[0] : request.headers.get("x-real-ip") || "127.0.0.1";

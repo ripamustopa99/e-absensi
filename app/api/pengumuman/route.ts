@@ -62,7 +62,7 @@ export async function GET(request: Request) {
     const sql = `
       SELECT p.*,
              json_build_object('nama', u.nama, 'role', u.role) as "dibuatOleh",
-             CASE WHEN ta.id IS NOT NULL THEN json_build_object('label', ta.label, 'semester', ta.semester) ELSE NULL END as "tahunAjaran"
+             CASE WHEN ta.id IS NOT NULL THEN json_build_object('label', ta.label) ELSE NULL END as "tahunAjaran"
       FROM pengumuman p
       LEFT JOIN users u ON p."dibuatOlehId" = u.id
       LEFT JOIN tahun_ajaran ta ON p."tahunAjaranId" = ta.id

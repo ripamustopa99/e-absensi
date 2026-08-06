@@ -24,8 +24,13 @@ export async function POST(request: Request) {
       uploadStream.end(buffer);
     });
 
-    return NextResponse.json({ success: true, data: { url: result.secure_url, foto: result.secure_url } });
+    const url = result.secure_url;
+    return NextResponse.json({ success: true, data: { url, foto: url } });
   } catch (err: any) {
-    return NextResponse.json({ success: false, message: err.message || "Gagal mengunggah file" }, { status: 500 });
+    console.error("Upload Error:", err);
+    const message = err?.message?.includes("Signature")
+      ? "Gagal mengunggah ke Cloudinary (Signature tidak valid). Periksa konfigurasi CLOUDINARY_API_SECRET di .env"
+      : (err?.message || "Koneksi tidak stabil atau gagal mengunggah file.");
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

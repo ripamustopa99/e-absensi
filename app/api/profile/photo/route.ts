@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
-import cloudinary from "@/lib/cloudinary";
+import cloudinary, { deleteCloudinaryImage } from "@/lib/cloudinary";
 import { query } from "@/lib/db";
 
 import { JWT_SECRET } from "@/lib/jwt";
@@ -41,6 +41,13 @@ export async function POST(request: Request) {
 
     const fotoUrl = result.secure_url;
 
+    // Get old user foto to delete from Cloudinary
+    const oldUserRes = await query(`SELECT foto FROM users WHERE id = $1`, [userId]);
+    const oldFoto = oldUserRes.rows[0]?.foto;
+    if (oldFoto && oldFoto !== fotoUrl) {
+      await deleteCloudinaryImage(oldFoto);
+    }
+
     // Update user foto in database
     await query(`UPDATE users SET foto = $1, "updatedAt" = NOW() WHERE id = $2`, [fotoUrl, userId]);
 
@@ -51,7 +58,9 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     console.error("Profile Photo Upload Error:", error);
-    const message = error?.message || "Gagal mengunggah foto";
+    const message = error?.message?.includes("Signature")
+      ? "Gagal mengunggah ke Cloudinary (Signature tidak valid). Periksa konfigurasi CLOUDINARY_API_SECRET di .env"
+      : (error?.message || "Koneksi tidak stabil atau gagal mengunggah foto.");
     return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

@@ -32,6 +32,7 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   // Edit Mode states
   const [isEditingAkademik, setIsEditingAkademik] = useState(false);
@@ -92,10 +93,16 @@ export default function AdminSettingsPage() {
         api.get("/setting/CONFIG_APP").catch(() => ({ data: null })),
         api.get("/setting/CONFIG_THEME").catch(() => ({ data: null })),
       ]);
-      if (resAkademik.data?.value) setAkademik(resAkademik.data.value);
-      if (resCms.data?.value) setCms(resCms.data.value);
+      if (resAkademik.data?.value) {
+        const val = typeof resAkademik.data.value === "string" ? JSON.parse(resAkademik.data.value) : resAkademik.data.value;
+        setAkademik(prev => ({ ...prev, ...val }));
+      }
+      if (resCms.data?.value) {
+        const val = typeof resCms.data.value === "string" ? JSON.parse(resCms.data.value) : resCms.data.value;
+        setCms(prev => ({ ...prev, ...val }));
+      }
       if (resTheme.data?.value) {
-        const val = resTheme.data.value;
+        const val = typeof resTheme.data.value === "string" ? JSON.parse(resTheme.data.value) : resTheme.data.value;
         const currentCssPrimary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
         const activeColor = val.primaryColor || (currentCssPrimary.startsWith("#") ? currentCssPrimary : "#0FBE85");
         const lightVar = val.defaultLightVariant || "light";
@@ -175,31 +182,32 @@ export default function AdminSettingsPage() {
     applyThemeLive(themeConfig.primaryColor, variant);
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    setUploadingLogo(true);
-    try {
-      const res = await api.post<{ success: true; data: { url: string } }>("/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setCms({ ...cms, logoUrl: res.data.data.url });
-      toast.success("Logo berhasil diunggah ke Cloudinary!");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal mengunggah logo ke Cloudinary");
-    } finally {
-      setUploadingLogo(false);
-    }
+    setLogoFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setCms({ ...cms, logoUrl: previewUrl });
+    toast.success("Logo dipilih (preview aktif). Klik Simpan untuk mengunggah.");
   };
 
   const saveSettings = async (key: string, data: any) => {
     setSaving(true);
     try {
-      await api.put(`/setting/${key}`, { value: data });
+      let currentData = { ...data };
+      if (key === "CONFIG_APP" && logoFile) {
+        setUploadingLogo(true);
+        const formData = new FormData();
+        formData.append("file", logoFile);
+        const uploadRes = await api.post<{ success: true; data: { url: string } }>("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        currentData.logoUrl = uploadRes.data.data.url;
+        setLogoFile(null);
+        setUploadingLogo(false);
+      }
+
+      await api.put(`/setting/${key}`, { value: currentData });
       toast.success("Pengaturan berhasil disimpan");
       if (key === "CONFIG_APP") {
         window.dispatchEvent(new Event("brand-updated"));
@@ -210,11 +218,12 @@ export default function AdminSettingsPage() {
       }
       router.refresh();
       fetchSettings();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error("Gagal menyimpan pengaturan");
+      toast.error(err.response?.data?.message || "Gagal menyimpan pengaturan");
     } finally {
       setSaving(false);
+      setUploadingLogo(false);
     }
   };
 
@@ -528,6 +537,7 @@ export default function AdminSettingsPage() {
                     <button
                       onClick={() => {
                         setIsEditingCms(false);
+                        setLogoFile(null);
                         fetchSettings();
                       }}
                       className="px-4 py-2.5 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] text-[13px] font-bold rounded-[var(--radius-md)] hover:text-[var(--text-primary)] transition-colors"

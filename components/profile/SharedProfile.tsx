@@ -40,6 +40,7 @@ type ProfileData = {
 export default function SharedProfile() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // Edit Profile Modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -105,7 +106,7 @@ export default function SharedProfile() {
     const formData = new FormData();
     formData.append("photo", file);
 
-    setLoading(true);
+    setUploadingPhoto(true);
     try {
       const res = await api.post<{ data: { foto: string } }>(
         "/profile/photo",
@@ -127,7 +128,7 @@ export default function SharedProfile() {
         toast.error(error.response?.data?.message || "Gagal mengunggah foto");
       }
     } finally {
-      setLoading(false);
+      setUploadingPhoto(false);
     }
   };
 
@@ -207,7 +208,7 @@ export default function SharedProfile() {
         <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" style={{ backgroundColor: "var(--primary-subtle)" }} />
 
         <div className="relative shrink-0">
-          <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[var(--surface)] shadow-lg overflow-hidden bg-[var(--surface-subtle)]">
+          <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[var(--surface)] shadow-lg overflow-hidden bg-[var(--surface-subtle)] relative">
             <Image
               src={
                 profile.foto ||
@@ -217,8 +218,13 @@ export default function SharedProfile() {
               width={128}
               height={128}
               unoptimized={true}
-              className="object-cover w-full h-full"
+              className={`object-cover w-full h-full ${uploadingPhoto ? "opacity-50" : ""}`}
             />
+            {uploadingPhoto && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                <Loader2 size={32} className="animate-spin" style={{ color: "var(--primary)" }} />
+              </div>
+            )}
           </div>
           <button
             onClick={handleEditProfilePhoto}

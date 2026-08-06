@@ -24,7 +24,7 @@ type Pengumuman = {
   foto: string | null;
   tanggalPublish: string;
   dibuatOleh: { nama: string; role: string };
-  tahunAjaran?: { label: string; semester: string } | null;
+  tahunAjaran?: { label: string; semester?: string } | null;
 };
 
 export default function GuruPengumumanPage() {
