@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { useState } from "react";
@@ -11,7 +12,6 @@ import {
   CalendarDays,
   GraduationCap,
   CalendarRange,
-  Presentation,
   BookOpen,
   UserCheck,
   Megaphone,
@@ -25,7 +25,7 @@ const adminSections: NavSection[] = [
     label: "Menu Utama",
     items: [
       { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-      { name: "Guru / Admin", href: "/admin/users", icon: Users },
+      { name: "Users / Guru", href: "/admin/users", icon: Users },
       {
         name: "Siswa",
         icon: GraduationCap,

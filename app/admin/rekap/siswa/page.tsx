@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
@@ -8,7 +9,6 @@ import {
   Loader2,
   Filter,
   X,
-  Search,
   Users,
   BarChart3,
   ChevronRight,

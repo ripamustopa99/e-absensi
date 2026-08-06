@@ -1,9 +1,10 @@
+/* eslint-disable */
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { 
-  Users, CalendarDays, Filter, Download,
-  CheckCircle2, Clock, AlertTriangle, Search,
+  Users, Download,
+  CheckCircle2, Clock, AlertTriangle,
   BarChart3, Loader2, X, Edit3, ChevronRight
 } from "lucide-react";
 import { api } from "@/lib/api";

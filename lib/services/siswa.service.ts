@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { query } from "@/lib/db";
 
 const TINGKAT_RANKS: Record<string, number> = {
@@ -85,7 +86,7 @@ export async function getSiswaList(filters?: {
   page?: number;
   limit?: number;
 }) {
-  let whereClauses = [`1=1`];
+  const whereClauses = [`1=1`];
   const params: any[] = [];
 
   if (filters?.jenjang && filters.jenjang !== "ALL") {
@@ -152,7 +153,7 @@ export async function getSiswaList(filters?: {
         [studentIds]
       );
       allRiwayat = riwayatRes.rows;
-    } catch (e: any) {}
+    } catch {}
   }
 
   const riwayatMap = new Map<string, any[]>();

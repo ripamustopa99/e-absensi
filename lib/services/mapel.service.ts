@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { query } from "@/lib/db";
 
 export async function getMapelList(filters?: {
@@ -9,7 +10,7 @@ export async function getMapelList(filters?: {
   page?: number;
   limit?: number;
 }) {
-  let whereClauses = [`1=1`];
+  const whereClauses = [`1=1`];
   const params: any[] = [];
 
   if (filters?.search) {
@@ -65,7 +66,7 @@ export async function getMapelList(filters?: {
       for (const row of gCounts.rows) {
         guruCountMap.set(row.mapelId, parseInt(row.count, 10));
       }
-    } catch (r: any) {}
+    } catch {}
 
     try {
       const jCounts = await query(
@@ -75,7 +76,7 @@ export async function getMapelList(filters?: {
       for (const row of jCounts.rows) {
         jadwalCountMap.set(row.mapelId, parseInt(row.count, 10));
       }
-    } catch (r: any) {}
+    } catch {}
   }
 
   const formattedData = dataRes.rows.map((row: any) => {

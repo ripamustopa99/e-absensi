@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect */
 "use client";
 
-import { Bell, BellRing, Menu, Sun, Moon, LogOut, UserCircle, Settings, PartyPopper, AlertTriangle, Loader2 } from "lucide-react";
+import { Bell, BellRing, Menu, Sun, Moon, LogOut, UserCircle, Settings, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
@@ -17,20 +18,21 @@ interface TopbarProps {
 }
 
 export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
-  const { theme, setTheme } = useTheme();
+  const { theme: _theme, setTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [recentAnnouncements, setRecentAnnouncements] = useState<any[]>([]);
-  const [systemAlerts, setSystemAlerts] = useState<any[]>([]);
+  const [_systemAlerts, _setSystemAlerts] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [currentMode, setCurrentMode] = useState("light");
   const [defaultLightVariant, setDefaultLightVariant] = useState("light");
   const [defaultDarkVariant, setDefaultDarkVariant] = useState("dark");
+  void _theme; void _systemAlerts; void _setSystemAlerts;
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);

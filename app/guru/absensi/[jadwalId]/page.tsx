@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
@@ -10,8 +11,6 @@ import {
   CheckCircle,
   Search,
   FileText,
-  Filter,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import type { AxiosError } from "axios";

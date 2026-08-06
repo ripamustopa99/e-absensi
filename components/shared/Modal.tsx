@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { X, Loader2 } from "lucide-react";
+import { X } from "lucide-react";
 
 type ModalProps = {
   isOpen: boolean;

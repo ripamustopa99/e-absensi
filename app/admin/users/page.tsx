@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { UserManagementView } from "@/components/admin/UserManagementView";

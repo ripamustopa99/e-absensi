@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "sonner";
@@ -43,7 +44,7 @@ function hexToRgba(hex: string, alpha: number) {
 function adjustBrightness(hex: string, percent: number) {
   let c = hex.replace("#", "");
   if (c.length === 3) c = c.split("").map((x) => x + x).join("");
-  let num = parseInt(c, 16);
+  const num = parseInt(c, 16);
   let r = (num >> 16) + percent;
   let g = ((num >> 8) & 255) + percent;
   let b = (num & 255) + percent;

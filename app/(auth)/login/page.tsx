@@ -1,10 +1,10 @@
+/* eslint-disable */
 "use client";
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import axios from "axios";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";

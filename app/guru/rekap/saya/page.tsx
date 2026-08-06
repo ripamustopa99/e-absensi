@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -92,7 +93,7 @@ export default function KehadiranGuruPage() {
         } else if (list.length > 0) {
           setFilterTahunAjaranId(list[0].id);
         }
-      } catch (err) {
+      } catch {
         toast.error("Gagal memuat daftar tahun ajaran");
       } finally {
         setLoadingTahun(false);

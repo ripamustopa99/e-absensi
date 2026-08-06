@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -684,7 +685,7 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
                   toast.success("Jadwal berhasil diimpor");
                   setIsImportModalOpen(false);
                   fetchJadwal();
-                } catch (err) {
+                } catch {
                   toast.error("Gagal mengimpor jadwal");
                 }
               }}

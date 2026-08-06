@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -125,7 +126,7 @@ export function MapelManagementView({ jenjang }: MapelManagementViewProps) {
       });
       const kArr = Array.from(kSet);
       setKurikulums(kArr);
-    } catch (e) {
+    } catch {
       toast.error(`Gagal memuat data mata pelajaran ${jenjang}`);
     } finally {
       setIsLoading(false);
@@ -196,7 +197,7 @@ export function MapelManagementView({ jenjang }: MapelManagementViewProps) {
     try {
       await api.patch(`/mapel/${item.id}/status`);
       toast.success("Status mapel berhasil diubah");
-    } catch (err) {
+    } catch {
       setMapelList((list) => list.map((m) => (m.id === item.id ? { ...m, isAktif: prev } : m)));
       toast.error("Gagal mengubah status mapel");
     }
@@ -570,7 +571,7 @@ export function MapelManagementView({ jenjang }: MapelManagementViewProps) {
 
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider block">
-                Pilih Mata Pelajaran dari "{importForm.sourceKurikulum || "Kurikulum Sumber"}"
+                Pilih Mata Pelajaran dari &ldquo;{importForm.sourceKurikulum || "Kurikulum Sumber"}&rdquo;
               </label>
               <div className="border border-[var(--border)] rounded-xl overflow-hidden divide-y divide-[var(--border)] max-h-56 overflow-y-auto p-1">
                 {sourceMapelOptions

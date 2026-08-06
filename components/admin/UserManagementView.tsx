@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -100,11 +101,21 @@ export function UserManagementView() {
 
   const [deleteTarget, setDeleteTarget] = useState<UserData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [takenWali, setTakenWali] = useState<{ id: string; userId: string; jenjang: "MTS" | "MA"; tingkat: string }[]>([]);
+  const [takenWali, setTakenWali] = useState<
+    { id: string; userId: string; jenjang: "MTS" | "MA"; tingkat: string }[]
+  >([]);
 
   const fetchTakenWali = useCallback(async () => {
     try {
-      const res = await api.get<{ success: true; data: { id: string; userId: string; jenjang: "MTS" | "MA"; tingkat: string }[] }>("/users/wali-terpakai");
+      const res = await api.get<{
+        success: true;
+        data: {
+          id: string;
+          userId: string;
+          jenjang: "MTS" | "MA";
+          tingkat: string;
+        }[];
+      }>("/users/wali-terpakai");
       setTakenWali(res.data.data);
     } catch {}
   }, []);
@@ -116,7 +127,10 @@ export function UserManagementView() {
   const availableTingkatOptions = useMemo(() => {
     return TINGKAT_OPTIONS.filter((opt) => {
       const takenByOther = takenWali.find(
-        (w) => w.jenjang === opt.jenjang && w.tingkat === opt.tingkat && (!editId || w.userId !== editId)
+        (w) =>
+          w.jenjang === opt.jenjang &&
+          w.tingkat === opt.tingkat &&
+          (!editId || w.userId !== editId),
       );
       return !takenByOther;
     });
@@ -628,29 +642,38 @@ export function UserManagementView() {
               Penugasan Wali Kelas (Bisa Pilih Banyak di MTs & MA)
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {availableTingkatOptions.map((opt: { jenjang: "MTS" | "MA"; tingkat: string; label: string }) => {
-                const checked = formData.waliTingkat.some(
-                  (w) => w.jenjang === opt.jenjang && w.tingkat === opt.tingkat,
-                );
-                return (
-                  <div
-                    key={`${opt.jenjang}-${opt.tingkat}`}
-                    onClick={() => toggleWaliTingkat(opt.jenjang, opt.tingkat)}
-                    className={`p-2.5 rounded-lg border text-[12px] font-medium flex items-center gap-2 cursor-pointer transition-all ${
-                      checked
-                        ? "bg-primary text-white border-primary-hover"
-                        : "bg-[var(--surface)] border-[var(--border)] text-[var(--text-primary)] hover:border-primary"
-                    }`}
-                  >
-                    {checked ? (
-                      <CheckSquare size={14} className="shrink-0" />
-                    ) : (
-                      <Square size={14} className="shrink-0 opacity-50" />
-                    )}
-                    <span className="truncate">{opt.label}</span>
-                  </div>
-                );
-              })}
+              {availableTingkatOptions.map(
+                (opt: {
+                  jenjang: "MTS" | "MA";
+                  tingkat: string;
+                  label: string;
+                }) => {
+                  const checked = formData.waliTingkat.some(
+                    (w) =>
+                      w.jenjang === opt.jenjang && w.tingkat === opt.tingkat,
+                  );
+                  return (
+                    <div
+                      key={`${opt.jenjang}-${opt.tingkat}`}
+                      onClick={() =>
+                        toggleWaliTingkat(opt.jenjang, opt.tingkat)
+                      }
+                      className={`p-2.5 rounded-lg border text-[12px] font-medium flex items-center gap-2 cursor-pointer transition-all ${
+                        checked
+                          ? "bg-primary text-white border-primary-hover"
+                          : "bg-[var(--surface)] border-[var(--border)] text-[var(--text-primary)] hover:border-primary"
+                      }`}
+                    >
+                      {checked ? (
+                        <CheckSquare size={14} className="shrink-0" />
+                      ) : (
+                        <Square size={14} className="shrink-0 opacity-50" />
+                      )}
+                      <span className="truncate">{opt.label}</span>
+                    </div>
+                  );
+                },
+              )}
             </div>
           </div>
 

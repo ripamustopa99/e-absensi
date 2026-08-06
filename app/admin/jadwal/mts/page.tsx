@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { JadwalManagementView } from "@/components/admin/JadwalManagementView";

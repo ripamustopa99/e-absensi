@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
 import MobileFilterDrawer from "./MobileFilterDrawer";
 
 type ModuleToolbarProps = {

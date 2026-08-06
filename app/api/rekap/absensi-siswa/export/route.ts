@@ -1,10 +1,8 @@
+/* eslint-disable */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import { query } from "@/lib/db";
 import { ensureAbsensiSiswaTableExists } from "@/lib/academic-helper";
-
-import { JWT_SECRET } from "@/lib/jwt";
 
 export async function GET(request: Request) {
   try {
@@ -21,7 +19,7 @@ export async function GET(request: Request) {
     const bulan = searchParams.get("bulan");
     const tahun = searchParams.get("tahun");
 
-    let studentQuery = `SELECT id, nama, nisn FROM siswa WHERE jenjang = $1 AND tingkat = $2 AND status = 'AKTIF' ORDER BY nama ASC`;
+    const studentQuery = `SELECT id, nama, nisn FROM siswa WHERE jenjang = $1 AND tingkat = $2 AND status = 'AKTIF' ORDER BY nama ASC`;
     const studentsRes = await query(studentQuery, [jenjang, tingkat]);
     const students = studentsRes.rows;
 

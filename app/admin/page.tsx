@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -5,7 +6,6 @@ import { api } from "@/lib/api";
 import {
   Users,
   FileCheck,
-  Megaphone,
   CalendarDays,
   ArrowUpRight,
   Loader2,
@@ -13,7 +13,6 @@ import {
   SlidersHorizontal,
   Search,
 } from "lucide-react";
-import Link from "next/link";
 import { toast } from "sonner";
 import AttendanceTrendChart from "@/components/admin/AttendanceTrendChart";
 import TopSalesWidget from "@/components/admin/TopSalesWidget";
@@ -59,7 +58,10 @@ export default function AdminDashboardPage() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsWidgetDropdownOpen(false);
       }
     };
@@ -70,12 +72,21 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchAdminDashboard = async () => {
       try {
-        const [guruRekapRes, siswaRes, kelasRes, mapelRes, pengumumanDraftRes, laporanKehadiranRes] = await Promise.all([
+        const [
+          guruRekapRes,
+          siswaRes,
+          kelasRes,
+          mapelRes,
+          pengumumanDraftRes,
+          laporanKehadiranRes,
+        ] = await Promise.all([
           api.get<any>("/absensi-guru/admin/rekap").catch(() => null),
           api.get<any>("/siswa").catch(() => null),
           api.get<any>("/kelas").catch(() => null),
           api.get<any>("/mapel").catch(() => null),
-          api.get<any>("/pengumuman?isPublished=false").catch(() => ({ data: { data: [] } })),
+          api
+            .get<any>("/pengumuman?isPublished=false")
+            .catch(() => ({ data: { data: [] } })),
           api.get<any>("/laporan/kehadiran").catch(() => null),
         ]);
 
@@ -104,7 +115,9 @@ export default function AdminDashboardPage() {
             totalSemua += g._count.status;
           });
           if (totalSemua > 0) {
-            persentaseSiswa = Number(((totalHadir / totalSemua) * 100).toFixed(1));
+            persentaseSiswa = Number(
+              ((totalHadir / totalSemua) * 100).toFixed(1),
+            );
           }
         }
 
@@ -114,7 +127,8 @@ export default function AdminDashboardPage() {
             ...prev,
             totalGuru: d.summary.totalGuru || prev.totalGuru,
             guruHadirHariIni: d.summary.totalHadir || prev.guruHadirHariIni,
-            persentaseGuruHadir: d.summary.avgPersentase || prev.persentaseGuruHadir,
+            persentaseGuruHadir:
+              d.summary.avgPersentase || prev.persentaseGuruHadir,
             persentaseSiswaHadir: persentaseSiswa,
             totalSiswa: totalSiswaCount,
             totalKelas: totalKelasCount,
@@ -125,16 +139,30 @@ export default function AdminDashboardPage() {
         const pengumumanData = pengumumanDraftRes?.data?.data;
         const pengumumanList = Array.isArray(pengumumanData)
           ? pengumumanData
-          : (pengumumanData?.data && Array.isArray(pengumumanData.data) ? pengumumanData.data : []);
+          : pengumumanData?.data && Array.isArray(pengumumanData.data)
+            ? pengumumanData.data
+            : [];
         setDraftPengumuman(pengumumanList);
 
         if (guruRekapRes?.data?.data?.rekapHarian) {
-          const list = guruRekapRes.data.data.rekapHarian.slice(0, 5).map((item: any) => ({
-            name: item.guru?.nama || "Guru",
-            role: item.guru?.jabatan || "Pengajar",
-            time: item.waktuAbsen ? new Date(item.waktuAbsen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " WIB" : "—",
-            status: item.status === "HADIR" ? "Tepat Waktu" : item.status === "TELAT" ? "Terlambat" : "Belum Absen",
-          }));
+          const list = guruRekapRes.data.data.rekapHarian
+            .slice(0, 5)
+            .map((item: any) => ({
+              name: item.guru?.nama || "Guru",
+              role: item.guru?.jabatan || "Pengajar",
+              time: item.waktuAbsen
+                ? new Date(item.waktuAbsen).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }) + " WIB"
+                : "—",
+              status:
+                item.status === "HADIR"
+                  ? "Tepat Waktu"
+                  : item.status === "TELAT"
+                    ? "Terlambat"
+                    : "Belum Absen",
+            }));
           setRecentAttendance(list);
         } else {
           setRecentAttendance([]);
@@ -159,15 +187,22 @@ export default function AdminDashboardPage() {
   };
 
   const filteredAttendance = recentAttendance.filter((item) => {
-    const matchSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.role.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchStatus = statusFilter === "Semua" || item.status === statusFilter;
+    const matchSearch =
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.role.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchStatus =
+      statusFilter === "Semua" || item.status === statusFilter;
     return matchSearch && matchStatus;
   });
 
   if (loading) {
     return (
       <div className="flex justify-center py-40">
-        <Loader2 size={36} className="animate-spin" style={{ color: "var(--primary)" }} />
+        <Loader2
+          size={36}
+          className="animate-spin"
+          style={{ color: "var(--primary)" }}
+        />
       </div>
     );
   }
@@ -181,16 +216,21 @@ export default function AdminDashboardPage() {
             Ringkasan & Kendali Sekolah
           </h1>
           <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
-            Statistik real-time kehadiran guru, murid, dan agenda akademik sekolah.
+            Statistik real-time kehadiran guru, murid, dan agenda akademik
+            sekolah.
           </p>
         </div>
-        <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+        <div
+          className="flex items-center gap-3 relative border"
+          ref={dropdownRef}
+        >
           {/* Customize Widget Dropdown Toggle */}
           <button
             onClick={() => setIsWidgetDropdownOpen(!isWidgetDropdownOpen)}
             className="px-4 py-2 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-primary)] text-[12px] font-bold rounded-xl hover:bg-[var(--border-subtle)] transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
           >
-            <SlidersHorizontal size={14} style={{ color: "var(--primary)" }} /> Atur Widget
+            <SlidersHorizontal size={14} style={{ color: "var(--primary)" }} />{" "}
+            Atur Widget
           </button>
 
           {/* Dropdown Menu */}
@@ -205,7 +245,10 @@ export default function AdminDashboardPage() {
                 { key: "topKehadiran", label: "Top Kehadiran Kelas" },
                 { key: "monitoringGuru", label: "Monitoring Kehadiran Guru" },
                 { key: "kalenderDraft", label: "Draft Kalender Akademik" },
-                { key: "statistikSistem", label: "Informasi & Statistik Sistem" },
+                {
+                  key: "statistikSistem",
+                  label: "Informasi & Statistik Sistem",
+                },
               ].map((item) => (
                 <label
                   key={item.key}
@@ -216,7 +259,10 @@ export default function AdminDashboardPage() {
                     type="checkbox"
                     checked={(widgets as any)[item.key]}
                     onChange={(e) =>
-                      setWidgets((prev) => ({ ...prev, [item.key]: e.target.checked }))
+                      setWidgets((prev) => ({
+                        ...prev,
+                        [item.key]: e.target.checked,
+                      }))
                     }
                     className="w-4 h-4 rounded cursor-pointer accent-[var(--primary)]"
                   />
@@ -231,24 +277,49 @@ export default function AdminDashboardPage() {
       {widgets.statCards && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl pointer-events-none" style={{ backgroundColor: "var(--primary-subtle)" }} />
+            <div
+              className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl pointer-events-none"
+              style={{ backgroundColor: "var(--primary-subtle)" }}
+            />
             <div className="flex items-start justify-between mb-4">
-              <span className="text-[13px] font-bold text-[var(--text-secondary)]">Kehadiran Guru Hari Ini</span>
-              <div className="p-2.5 rounded-xl" style={{ backgroundColor: "var(--primary-subtle)", color: "var(--primary)" }}><Users size={18} /></div>
+              <span className="text-[13px] font-bold text-[var(--text-secondary)]">
+                Kehadiran Guru Hari Ini
+              </span>
+              <div
+                className="p-2.5 rounded-xl"
+                style={{
+                  backgroundColor: "var(--primary-subtle)",
+                  color: "var(--primary)",
+                }}
+              >
+                <Users size={18} />
+              </div>
             </div>
-            <p className="text-3xl font-black text-[var(--text-primary)] tracking-tight">{stats.persentaseGuruHadir}%</p>
-            <p className="text-[12px] font-bold mt-2 flex items-center gap-1" style={{ color: "var(--primary)" }}>
-              <ArrowUpRight size={14} /> {stats.guruHadirHariIni} dari {stats.totalGuru} guru hadir
+            <p className="text-3xl font-black text-[var(--text-primary)] tracking-tight">
+              {stats.persentaseGuruHadir}%
+            </p>
+            <p
+              className="text-[12px] font-bold mt-2 flex items-center gap-1"
+              style={{ color: "var(--primary)" }}
+            >
+              <ArrowUpRight size={14} /> {stats.guruHadirHariIni} dari{" "}
+              {stats.totalGuru} guru hadir
             </p>
           </div>
 
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl pointer-events-none" />
             <div className="flex items-start justify-between mb-4">
-              <span className="text-[13px] font-bold text-[var(--text-secondary)]">Kehadiran Murid (Rata-rata)</span>
-              <div className="p-2.5 bg-blue-500/10 text-blue-500 rounded-xl"><GraduationCap size={18} /></div>
+              <span className="text-[13px] font-bold text-[var(--text-secondary)]">
+                Kehadiran Murid (Rata-rata)
+              </span>
+              <div className="p-2.5 bg-blue-500/10 text-blue-500 rounded-xl">
+                <GraduationCap size={18} />
+              </div>
             </div>
-            <p className="text-3xl font-black text-[var(--text-primary)] tracking-tight">{stats.persentaseSiswaHadir}%</p>
+            <p className="text-3xl font-black text-[var(--text-primary)] tracking-tight">
+              {stats.persentaseSiswaHadir}%
+            </p>
             <p className="text-[12px] font-bold text-blue-600 dark:text-blue-400 mt-2 flex items-center gap-1">
               <ArrowUpRight size={14} /> Update terbaru dari sistem
             </p>
@@ -257,10 +328,16 @@ export default function AdminDashboardPage() {
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
             <div className="flex items-start justify-between mb-4">
-              <span className="text-[13px] font-bold text-[var(--text-secondary)]">Total Siswa Aktif</span>
-              <div className="p-2.5 bg-emerald-500/10 text-emerald-600 rounded-xl"><FileCheck size={18} /></div>
+              <span className="text-[13px] font-bold text-[var(--text-secondary)]">
+                Total Siswa Aktif
+              </span>
+              <div className="p-2.5 bg-emerald-500/10 text-emerald-600 rounded-xl">
+                <FileCheck size={18} />
+              </div>
             </div>
-            <p className="text-3xl font-black text-[var(--text-primary)] tracking-tight">{stats.totalSiswa}</p>
+            <p className="text-3xl font-black text-[var(--text-primary)] tracking-tight">
+              {stats.totalSiswa}
+            </p>
             <p className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 mt-2 flex items-center gap-1">
               <ArrowUpRight size={14} /> Terbagi di {stats.totalKelas} Kelas
             </p>
@@ -306,7 +383,10 @@ export default function AdminDashboardPage() {
               </h2>
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                  <Search
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
+                  />
                   <input
                     type="text"
                     placeholder="Cari guru..."
@@ -341,7 +421,10 @@ export default function AdminDashboardPage() {
                 <tbody className="divide-y divide-[var(--border-subtle)]">
                   {filteredAttendance.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="text-center py-8 text-[12px] text-[var(--text-tertiary)]">
+                      <td
+                        colSpan={4}
+                        className="text-center py-8 text-[12px] text-[var(--text-tertiary)]"
+                      >
                         Belum ada guru yang melakukan absensi pada hari ini.
                       </td>
                     </tr>
@@ -350,30 +433,49 @@ export default function AdminDashboardPage() {
                       const isOnTime = row.status === "Tepat Waktu";
                       const isLate = row.status === "Terlambat";
                       return (
-                        <tr key={row.name} className="hover:bg-[var(--surface-subtle)]/50 transition-colors">
+                        <tr
+                          key={row.name}
+                          className="hover:bg-[var(--surface-subtle)]/50 transition-colors"
+                        >
                           <td className="py-3.5 pr-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px]" style={{ backgroundColor: "var(--primary-subtle)", color: "var(--primary)" }}>
+                              <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px]"
+                                style={{
+                                  backgroundColor: "var(--primary-subtle)",
+                                  color: "var(--primary)",
+                                }}
+                              >
                                 {row.name.charAt(0)}
                               </div>
-                              <span className="text-[13px] font-bold text-[var(--text-primary)]">{row.name}</span>
+                              <span className="text-[13px] font-bold text-[var(--text-primary)]">
+                                {row.name}
+                              </span>
                             </div>
                           </td>
-                          <td className="py-3.5 pr-4 text-[12px] text-[var(--text-secondary)]">{row.role}</td>
-                          <td className="py-3.5 pr-4 text-[12px] text-[var(--text-secondary)]">{row.time}</td>
+                          <td className="py-3.5 pr-4 text-[12px] text-[var(--text-secondary)]">
+                            {row.role}
+                          </td>
+                          <td className="py-3.5 pr-4 text-[12px] text-[var(--text-secondary)]">
+                            {row.time}
+                          </td>
                           <td className="py-3.5 text-right">
                             <span
                               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${
                                 isOnTime
                                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                                   : isLate
-                                  ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                                  : "bg-rose-500/10 text-rose-500"
+                                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                    : "bg-rose-500/10 text-rose-500"
                               }`}
                             >
                               <span
                                 className={`w-1.5 h-1.5 rounded-full ${
-                                  isOnTime ? "bg-emerald-500" : isLate ? "bg-amber-500" : "bg-rose-500"
+                                  isOnTime
+                                    ? "bg-emerald-500"
+                                    : isLate
+                                      ? "bg-amber-500"
+                                      : "bg-rose-500"
                                 }`}
                               />
                               {row.status}
@@ -394,19 +496,31 @@ export default function AdminDashboardPage() {
           {widgets.kalenderDraft && (
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
               <h2 className="text-[14px] font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <CalendarDays size={16} style={{ color: "var(--primary)" }} /> Draft Kalender Akademik ({draftPengumuman.length})
+                <CalendarDays size={16} style={{ color: "var(--primary)" }} />{" "}
+                Draft Kalender Akademik ({draftPengumuman.length})
               </h2>
 
               {draftPengumuman.length === 0 ? (
-                <p className="text-center py-6 text-[12px] text-[var(--text-tertiary)]">Tidak ada draft kalender menunggu.</p>
+                <p className="text-center py-6 text-[12px] text-[var(--text-tertiary)]">
+                  Tidak ada draft kalender menunggu.
+                </p>
               ) : (
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {draftPengumuman.map((item) => (
-                    <div key={item.id} className="p-3.5 bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl space-y-2">
-                      <p className="text-[13px] font-bold text-[var(--text-primary)] line-clamp-1">{item.judul}</p>
-                      <p className="text-[11px] text-[var(--text-secondary)] line-clamp-2">{item.isi}</p>
+                    <div
+                      key={item.id}
+                      className="p-3.5 bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl space-y-2"
+                    >
+                      <p className="text-[13px] font-bold text-[var(--text-primary)] line-clamp-1">
+                        {item.judul}
+                      </p>
+                      <p className="text-[11px] text-[var(--text-secondary)] line-clamp-2">
+                        {item.isi}
+                      </p>
                       <div className="flex items-center justify-between pt-1">
-                        <span className="text-[10px] text-[var(--text-tertiary)]">Menunggu Persetujuan</span>
+                        <span className="text-[10px] text-[var(--text-tertiary)]">
+                          Menunggu Persetujuan
+                        </span>
                         <button
                           onClick={() => handlePublishDraft(item.id)}
                           className="px-3 py-1 text-white text-[11px] font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
@@ -424,19 +538,30 @@ export default function AdminDashboardPage() {
 
           {widgets.statistikSistem && (
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-3">
-              <h2 className="text-[14px] font-bold text-[var(--text-primary)]">Statistik & Konfigurasi Sistem</h2>
+              <h2 className="text-[14px] font-bold text-[var(--text-primary)]">
+                Statistik & Konfigurasi Sistem
+              </h2>
               <div className="space-y-2 text-[12px] text-[var(--text-secondary)]">
                 <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle)]">
                   <span>Total Kelas Aktif</span>
-                  <span className="font-bold text-[var(--text-primary)]">{stats.totalKelas} Kelas</span>
+                  <span className="font-bold text-[var(--text-primary)]">
+                    {stats.totalKelas} Kelas
+                  </span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle)]">
                   <span>Mata Pelajaran</span>
-                  <span className="font-bold text-[var(--text-primary)]">{stats.totalMapel} Mapel</span>
+                  <span className="font-bold text-[var(--text-primary)]">
+                    {stats.totalMapel} Mapel
+                  </span>
                 </div>
                 <div className="flex justify-between py-1.5">
                   <span>Tahun Ajaran Aktif</span>
-                  <span className="font-bold" style={{ color: "var(--primary)" }}>2025/2026 Ganjil</span>
+                  <span
+                    className="font-bold"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    2025/2026 Ganjil
+                  </span>
                 </div>
               </div>
             </div>

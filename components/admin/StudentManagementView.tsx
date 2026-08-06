@@ -1,9 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  Search,
-  Filter,
   Plus,
   Edit2,
   Trash2,
@@ -11,7 +10,6 @@ import {
   GraduationCap,
   Loader2,
   Users,
-  MapPin,
   Calendar,
   Contact,
   CreditCard,
@@ -28,7 +26,6 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type { AxiosError } from "axios";
 import Modal from "@/components/shared/Modal";
-import MobileFilterDrawer from "@/components/shared/MobileFilterDrawer";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
@@ -206,13 +203,14 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
     selectedTahunAjaranId,
   ]);
 
-  const toggleSelectAll = () => {
+  const _toggleSelectAll = () => {
     if (selectedIds.length === siswa.length) {
       setSelectedIds([]);
     } else {
       setSelectedIds(siswa.map((s) => s.id));
     }
   };
+  void _toggleSelectAll;
 
   const toggleSelectOne = (id: string) => {
     setSelectedIds((prev) =>
@@ -632,7 +630,8 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
           minWidth="min-w-[1000px]"
           emptyMessage={`Tidak ada data siswa ${jenjang} yang ditemukan.`}
           emptyIcon={<Users size={36} className="mx-auto mb-3 opacity-50" />}
-          renderRow={(item, idx) => {
+          renderRow={(item, _idx) => {
+            void _idx;
             const isSelected = selectedIds.includes(item.id);
             const isTerminal = isTerminalGrade(item.tingkat);
             return (

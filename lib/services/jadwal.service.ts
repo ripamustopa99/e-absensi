@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { query } from "@/lib/db";
 import { getCurrentAcademicContext, ensureDefaultTahunAjaran } from "@/lib/academic-helper";
 
@@ -25,7 +26,7 @@ export async function getAdminJadwalList(filters?: {
   await ensureDefaultTahunAjaran();
 
   try {
-    let whereClauses = [`1=1`];
+    const whereClauses = [`1=1`];
     const params: any[] = [];
 
     if (filters?.jenjang && filters.jenjang !== "ALL") {
@@ -93,7 +94,7 @@ export async function getAdminJadwalList(filters?: {
           [jadwalIds],
         );
         allTingkat = tingkatRes.rows;
-      } catch (r: any) {}
+      } catch {}
     }
 
     const tingkatMap = new Map<string, any[]>();
