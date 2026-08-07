@@ -55,17 +55,25 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
     setCurrentMode(savedMode);
     fetchProfileAndUnread();
 
-    api.get("/public/setting/config").then((res: any) => {
-      if (res.data) {
-        if (res.data.defaultLightVariant) setDefaultLightVariant(res.data.defaultLightVariant);
-        if (res.data.defaultDarkVariant) setDefaultDarkVariant(res.data.defaultDarkVariant);
-      }
-    }).catch(() => {});
+    const fetchThemeConfig = () => {
+      api.get("/public/setting/config").then((res: any) => {
+        if (res.data) {
+          if (res.data.defaultLightVariant) setDefaultLightVariant(res.data.defaultLightVariant);
+          if (res.data.defaultDarkVariant) setDefaultDarkVariant(res.data.defaultDarkVariant);
+        }
+      }).catch(() => {});
+    };
+
+    fetchThemeConfig();
 
     const handleProfileUpdate = () => {
       fetchProfileAndUnread();
     };
+    const handleThemeUpdate = () => {
+      fetchThemeConfig();
+    };
     window.addEventListener("profile-updated", handleProfileUpdate);
+    window.addEventListener("theme-updated", handleThemeUpdate);
 
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -85,6 +93,7 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("profile-updated", handleProfileUpdate);
+      window.removeEventListener("theme-updated", handleThemeUpdate);
     };
   }, []);
 
@@ -95,6 +104,7 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
     document.documentElement.classList.remove("light", "light-lighter", "dark", "dark-darker");
     document.documentElement.classList.add(nextMode);
     localStorage.setItem("app_brightness_mode", nextMode);
+    document.cookie = `app_brightness_mode=${nextMode}; path=/; max-age=31536000`;
     setTheme(isCurrentlyDark ? "light" : "dark");
   };
 

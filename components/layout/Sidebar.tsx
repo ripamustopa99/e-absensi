@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronDown,
   Loader2,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -96,12 +97,15 @@ export function Sidebar({ isOpen, setIsOpen, sections }: SidebarProps) {
           "transform transition-all duration-300 ease-in-out",
           "lg:relative lg:z-40 lg:flex-shrink-0",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          isDesktopCollapsed ? "lg:w-[72px]" : "lg:w-64",
+          isDesktopCollapsed ? "lg:w-[72px]" : "w-72 lg:w-64",
         ].join(" ")}
       >
         {/* Brand */}
         <div
-          className={`h-14 flex items-center ${isDesktopCollapsed ? "justify-center" : "px-5"} border-b border-[var(--border)] relative shrink-0`}
+          className={[
+            "h-14 flex items-center justify-between border-b border-[var(--border)] relative shrink-0 transition-all duration-300 ease-in-out",
+            isDesktopCollapsed ? "px-[22px]" : "px-5",
+          ].join(" ")}
         >
           <div className="flex items-center gap-2.5 overflow-hidden">
             <div className="w-7 h-7 bg-primary rounded-[var(--radius-sm)] flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden">
@@ -131,6 +135,17 @@ export function Sidebar({ isOpen, setIsOpen, sections }: SidebarProps) {
               </span>
             )}
           </div>
+          
+          {/* Mobile Close Button */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="lg:hidden p-1.5 rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer"
+            aria-label="Tutup menu"
+          >
+            <X size={18} />
+          </button>
+
+          {/* Desktop Collapse Toggle Button */}
           <button
             onClick={() => {
               setIsDesktopCollapsed(!isDesktopCollapsed);
@@ -188,8 +203,8 @@ export function Sidebar({ isOpen, setIsOpen, sections }: SidebarProps) {
                           }}
                           title={isDesktopCollapsed ? item.name : undefined}
                           className={[
-                            "relative w-full flex items-center justify-between py-2 rounded-[var(--radius-sm)] transition-colors duration-150 cursor-pointer",
-                            isDesktopCollapsed ? "px-0 justify-center" : "px-3",
+                            "relative w-full flex items-center justify-between py-2 rounded-[var(--radius-sm)] transition-all duration-300 ease-in-out cursor-pointer",
+                            isDesktopCollapsed ? "px-[27px]" : "px-3",
                             isActive
                               ? "bg-primary-subtle text-primary"
                               : "text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]",
@@ -198,14 +213,14 @@ export function Sidebar({ isOpen, setIsOpen, sections }: SidebarProps) {
                           {isActive && (
                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-sm" />
                           )}
-                          <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="flex items-center gap-3">
                             <Icon
                               size={18}
-                              className={
+                              className={`shrink-0 ${
                                 isActive
                                   ? "text-primary"
                                   : "text-[var(--text-tertiary)]"
-                              }
+                              }`}
                             />
                             <span
                               className={`text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${
@@ -229,8 +244,8 @@ export function Sidebar({ isOpen, setIsOpen, sections }: SidebarProps) {
                           onClick={() => setIsOpen(false)}
                           title={isDesktopCollapsed ? item.name : undefined}
                           className={[
-                            "relative flex items-center gap-3 py-2 rounded-[var(--radius-sm)] transition-colors duration-150",
-                            isDesktopCollapsed ? "px-0 justify-center" : "px-3",
+                            "relative flex items-center gap-3 py-2 rounded-[var(--radius-sm)] transition-all duration-300 ease-in-out",
+                            isDesktopCollapsed ? "px-[27px]" : "px-3",
                             isActive
                               ? "bg-primary-subtle text-primary"
                               : "text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]",
@@ -239,21 +254,23 @@ export function Sidebar({ isOpen, setIsOpen, sections }: SidebarProps) {
                           {isActive && (
                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-sm" />
                           )}
-                          <Icon
-                            size={18}
-                            className={
-                              isActive
-                                ? "text-primary"
-                                : "text-[var(--text-tertiary)]"
-                            }
-                          />
-                          <span
-                            className={`text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${
-                              isDesktopCollapsed ? "max-w-0 opacity-0 w-0" : "max-w-[150px] opacity-100 w-auto"
-                            }`}
-                          >
-                            {item.name}
-                          </span>
+                          <div className="flex items-center gap-3">
+                            <Icon
+                              size={18}
+                              className={`shrink-0 ${
+                                isActive
+                                  ? "text-primary"
+                                  : "text-[var(--text-tertiary)]"
+                              }`}
+                            />
+                            <span
+                              className={`text-[13px] font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${
+                                isDesktopCollapsed ? "max-w-0 opacity-0 w-0" : "max-w-[150px] opacity-100 w-auto"
+                              }`}
+                            >
+                              {item.name}
+                            </span>
+                          </div>
                         </Link>
                       )}
 

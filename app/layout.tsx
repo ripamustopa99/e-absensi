@@ -30,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: titleTab || `${namaAplikasi} — Sistem Absensi Terpadu`,
     description: "Platform manajemen kehadiran guru dan jadwal mengajar",
-    icons: logoUrl ? { icon: logoUrl } : undefined,
+    icons: { icon: "/api/public/favicon" },
   };
 }
 
@@ -64,6 +64,7 @@ export default async function RootLayout({
 
   let primaryColor = "#0FBE85";
   let defaultLightVariant = "light";
+  let defaultDarkVariant = "dark";
   try {
     const res = await query(`SELECT value FROM setting WHERE key = $1`, ["CONFIG_THEME"]);
     if (res.rows.length > 0 && res.rows[0].value) {
@@ -74,10 +75,20 @@ export default async function RootLayout({
       if (val.defaultLightVariant) {
         defaultLightVariant = val.defaultLightVariant;
       }
+      if (val.defaultDarkVariant) {
+        defaultDarkVariant = val.defaultDarkVariant;
+      }
     }
   } catch {}
 
-  const activeBrightness = brightnessCookie || defaultLightVariant;
+  let activeBrightness = defaultLightVariant;
+  if (brightnessCookie) {
+    if (brightnessCookie.includes("dark")) {
+      activeBrightness = defaultDarkVariant;
+    } else {
+      activeBrightness = defaultLightVariant;
+    }
+  }
 
   const hoverColor = adjustBrightness(primaryColor, -15);
   const subtleColor = hexToRgba(primaryColor, 0.15);

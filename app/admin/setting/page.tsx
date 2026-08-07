@@ -63,23 +63,13 @@ export default function AdminSettingsPage() {
   });
 
   useEffect(() => {
-    const htmlClasses = document.documentElement.classList;
-    let currentMode = "light";
-    for (const m of ["light", "light-lighter", "dark", "dark-darker"]) {
-      if (htmlClasses.contains(m)) {
-        currentMode = m;
-        break;
-      }
-    }
-
     const currentCssPrimary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
     const activeColor = currentCssPrimary.startsWith("#") ? currentCssPrimary : "#0FBE85";
 
-    setThemeConfig({
+    setThemeConfig((prev) => ({
+      ...prev,
       primaryColor: activeColor,
-      defaultLightVariant: currentMode.includes("dark") ? "light" : (currentMode || "light"),
-      defaultDarkVariant: currentMode.includes("dark") ? currentMode : "dark",
-    });
+    }));
 
     fetchSettings();
     fetchTahunAjaran();
@@ -113,7 +103,7 @@ export default function AdminSettingsPage() {
           defaultLightVariant: lightVar,
           defaultDarkVariant: darkVar,
         });
-        applyThemeLive(activeColor, lightVar);
+        applyThemeLive(activeColor);
       }
     } catch (err) {
       console.error(err);
@@ -152,16 +142,17 @@ export default function AdminSettingsPage() {
     return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
   };
 
-  const applyThemeLive = (color: string, mode: string) => {
+  const applyThemeLive = (color: string, mode?: string) => {
     document.documentElement.style.setProperty("--primary", color);
     const hoverColor = adjustBrightness(color, -15);
     document.documentElement.style.setProperty("--primary-hover", hoverColor);
     document.documentElement.style.setProperty("--primary-subtle", hexToRgba(color, 0.15));
 
-    document.documentElement.classList.remove("light", "light-lighter", "dark", "dark-darker");
-    document.documentElement.classList.add(mode);
-
-    document.cookie = `app_brightness_mode=${mode}; path=/; max-age=31536000`;
+    if (mode) {
+      document.documentElement.classList.remove("light", "light-lighter", "dark", "dark-darker");
+      document.documentElement.classList.add(mode);
+      document.cookie = `app_brightness_mode=${mode}; path=/; max-age=31536000`;
+    }
   };
 
   const handleColorChange = (color: string) => {
@@ -174,12 +165,16 @@ export default function AdminSettingsPage() {
 
   const handleLightVariantChange = (variant: string) => {
     setThemeConfig((prev) => ({ ...prev, defaultLightVariant: variant }));
-    applyThemeLive(themeConfig.primaryColor, variant);
   };
 
   const handleDarkVariantChange = (variant: string) => {
     setThemeConfig((prev) => ({ ...prev, defaultDarkVariant: variant }));
+  };
+
+  const previewVariant = (variant: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     applyThemeLive(themeConfig.primaryColor, variant);
+    toast.success(`Pratinjau varian "${variant}" sedang aktif.`);
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -212,6 +207,9 @@ export default function AdminSettingsPage() {
       if (key === "CONFIG_APP") {
         window.dispatchEvent(new Event("brand-updated"));
         setIsEditingCms(false);
+      }
+      if (key === "CONFIG_THEME") {
+        window.dispatchEvent(new Event("theme-updated"));
       }
       if (key === "CONFIG_AKADEMIK") {
         setIsEditingAkademik(false);
@@ -606,27 +604,42 @@ export default function AdminSettingsPage() {
               <div className="pt-4 border-t border-[var(--border)]">
                 <h2 className="text-sm font-bold text-[var(--text-primary)] mb-1">Standar Varian Terang (Light Mode Nuansa)</h2>
                 <p className="text-[12px] text-[var(--text-secondary)] mb-3">
-                  Tentukan varian terang standar institusi yang digunakan saat pengguna memilih Light Mode.
+                  Tentukan varian terang standar institusi yang digunakan saat pengguna memilih Light Mode via topbar. Varian terang dan gelap dapat dipilih secara bebas dan independen.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {LIGHT_VARIANTS.map((m) => {
                     const Icon = m.icon;
                     const isSelected = themeConfig.defaultLightVariant === m.id;
                     return (
-                      <button
+                      <div
                         key={m.id}
-                        type="button"
                         onClick={() => handleLightVariantChange(m.id)}
-                        className={`p-4 rounded-xl border text-left transition-all space-y-1 ${
-                          isSelected ? "border-[var(--primary)] shadow-sm bg-[var(--surface-subtle)]" : "border-[var(--border)]"
+                        className={`p-4 rounded-xl border text-left transition-all space-y-2 cursor-pointer flex flex-col justify-between ${
+                          isSelected ? "border-[var(--primary)] shadow-sm bg-[var(--surface-subtle)] ring-1 ring-[var(--primary)]" : "border-[var(--border)] hover:border-[var(--text-tertiary)]"
                         }`}
                       >
-                        <div className="flex items-center gap-2 text-[var(--text-primary)] font-bold text-[13px]">
-                          <Icon size={16} className="text-[var(--primary)]" />
-                          <span>{m.name}</span>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-[var(--text-primary)] font-bold text-[13px]">
+                              <Icon size={16} className="text-[var(--primary)]" />
+                              <span>{m.name}</span>
+                            </div>
+                            {isSelected && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--primary)] text-white">Default Terpilih</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[var(--text-secondary)]">{m.desc}</p>
                         </div>
-                        <p className="text-[11px] text-[var(--text-secondary)]">{m.desc}</p>
-                      </button>
+                        <div className="pt-2 border-t border-[var(--border)] flex justify-end">
+                          <button
+                            type="button"
+                            onClick={(e) => previewVariant(m.id, e)}
+                            className="text-[11px] font-semibold text-[var(--primary)] hover:underline flex items-center gap-1"
+                          >
+                            🔍 Pratinjau Langsung
+                          </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
@@ -636,27 +649,42 @@ export default function AdminSettingsPage() {
               <div className="pt-4 border-t border-[var(--border)]">
                 <h2 className="text-sm font-bold text-[var(--text-primary)] mb-1">Standar Varian Gelap (Dark Mode Nuansa)</h2>
                 <p className="text-[12px] text-[var(--text-secondary)] mb-3">
-                  Tentukan varian gelap standar institusi yang digunakan saat pengguna memilih Dark Mode.
+                  Tentukan varian gelap standar institusi yang digunakan saat pengguna memilih Dark Mode via topbar. Bebas dipasangkan dengan varian terang apa saja.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {DARK_VARIANTS.map((m) => {
                     const Icon = m.icon;
                     const isSelected = themeConfig.defaultDarkVariant === m.id;
                     return (
-                      <button
+                      <div
                         key={m.id}
-                        type="button"
                         onClick={() => handleDarkVariantChange(m.id)}
-                        className={`p-4 rounded-xl border text-left transition-all space-y-1 ${
-                          isSelected ? "border-[var(--primary)] shadow-sm bg-[var(--surface-subtle)]" : "border-[var(--border)]"
+                        className={`p-4 rounded-xl border text-left transition-all space-y-2 cursor-pointer flex flex-col justify-between ${
+                          isSelected ? "border-[var(--primary)] shadow-sm bg-[var(--surface-subtle)] ring-1 ring-[var(--primary)]" : "border-[var(--border)] hover:border-[var(--text-tertiary)]"
                         }`}
                       >
-                        <div className="flex items-center gap-2 text-[var(--text-primary)] font-bold text-[13px]">
-                          <Icon size={16} className="text-[var(--primary)]" />
-                          <span>{m.name}</span>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-[var(--text-primary)] font-bold text-[13px]">
+                              <Icon size={16} className="text-[var(--primary)]" />
+                              <span>{m.name}</span>
+                            </div>
+                            {isSelected && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--primary)] text-white">Default Terpilih</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[var(--text-secondary)]">{m.desc}</p>
                         </div>
-                        <p className="text-[11px] text-[var(--text-secondary)]">{m.desc}</p>
-                      </button>
+                        <div className="pt-2 border-t border-[var(--border)] flex justify-end">
+                          <button
+                            type="button"
+                            onClick={(e) => previewVariant(m.id, e)}
+                            className="text-[11px] font-semibold text-[var(--primary)] hover:underline flex items-center gap-1"
+                          >
+                            🔍 Pratinjau Langsung
+                          </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
