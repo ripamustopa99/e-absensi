@@ -29,6 +29,13 @@ export async function GET(request: Request) {
     let whereSql = `WHERE 1=1`;
     const params: any[] = [];
 
+    // Auto-cleanup logs older than 90 days
+    try {
+      await query(`DELETE FROM log_aktivitas WHERE "createdAt" < NOW() - INTERVAL '90 days'`);
+    } catch (e) {
+      // ignore cleanup error silently
+    }
+
     if (search) {
       params.push(`%${search}%`);
       whereSql += ` AND (u.nama ILIKE $${params.length} OR la.aksi ILIKE $${params.length} OR la.modul ILIKE $${params.length})`;

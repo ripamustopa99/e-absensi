@@ -332,29 +332,32 @@ export default function StudentAttendancePage() {
   return (
     <div className="max-w-6xl mx-auto pb-32 lg:pb-10 space-y-6">
       {/* Top Header */}
-      <div className="flex items-start gap-4 pb-4 border-b border-[var(--border)]">
-        <Link
-          href="/guru/absensi"
-          className="mt-1 p-2 rounded-md text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)] transition-colors shrink-0"
-        >
-          <ArrowLeft size={18} />
-        </Link>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)] uppercase">
-            ABSENSI SISWA - TINGKAT{" "}
-            {scheduleInfo.tingkatList.map((t) => t.tingkat).join(", ")}
-          </h1>
-          <p className="text-[14px] font-medium text-[var(--text-secondary)] mt-1 flex items-center gap-2">
-            <span>{scheduleInfo.jenjang}</span>
-            <span>&bull;</span>
-            <span>{scheduleInfo.mapel.nama}</span>
-            <span>&bull;</span>
-            <span>
-              {scheduleInfo.jamMulai} - {scheduleInfo.jamSelesai}
-            </span>
-            <span>&bull;</span>
-            <span>{displayDate}</span>
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[var(--border)]">
+        <div className="flex items-start gap-3.5">
+          <Link
+            href="/guru/absensi"
+            className="p-2.5 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)] transition-colors shrink-0 shadow-sm"
+          >
+            <ArrowLeft size={18} />
+          </Link>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <span className="px-2.5 py-0.5 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-[11px] font-bold tracking-wide uppercase">
+                {scheduleInfo.jenjang}
+              </span>
+              <span className="text-xs font-semibold text-[var(--text-secondary)]">
+                Tingkat {scheduleInfo.tingkatList.map((t) => t.tingkat).join(", ")}
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">
+              {scheduleInfo.mapel.nama}
+            </h1>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 self-start sm:self-auto bg-[var(--surface)] border border-[var(--border)] px-3.5 py-2 rounded-[var(--radius-lg)] shadow-sm text-[13px] font-medium text-[var(--text-secondary)]">
+          <span className="font-bold text-[var(--text-primary)]">{scheduleInfo.jamMulai} - {scheduleInfo.jamSelesai}</span>
+          <span className="text-[var(--border)]">|</span>
+          <span>{displayDate}</span>
         </div>
       </div>
 
@@ -362,7 +365,7 @@ export default function StudentAttendancePage() {
         {/* Left Column - Main Content */}
         <div className="flex-1 w-full min-w-0 space-y-5">
           {/* Search & Filter Toolbar */}
-          <div className="flex items-center gap-3 p-1">
+          <div className="flex items-center gap-3 w-full">
             {/* Search Bar */}
             <div className="relative flex-1">
               <Search
@@ -378,91 +381,86 @@ export default function StudentAttendancePage() {
               />
             </div>
 
-            {/* Inline Filters (Desktop or 1 filter) */}
-            <div
-              className={`${scheduleInfo.tingkatList.length > 1 ? "hidden lg:flex" : "flex"} items-center gap-3`}
-            >
-              <div className="w-[180px]">
-                <select
-                  value={attendanceFilter}
-                  onChange={(e) => setAttendanceFilter(e.target.value as any)}
-                  className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] shadow-sm transition-all cursor-pointer"
-                >
-                  <option value="ALL">Semua</option>
-                  <option value="PRESENT">Hadir</option>
-                  <option value="ABSENT">Tidak Hadir</option>
-                  <option value="UNSET">Belum Set</option>
-                </select>
-              </div>
+            {/* Desktop Inline Filters */}
+            <div className="hidden lg:flex items-center gap-3">
+              <select
+                value={attendanceFilter}
+                onChange={(e) => setAttendanceFilter(e.target.value as any)}
+                className="px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] shadow-sm cursor-pointer"
+              >
+                <option value="ALL">Semua Status</option>
+                <option value="PRESENT">Hadir</option>
+                <option value="ABSENT">Tidak Hadir</option>
+                <option value="UNSET">Belum Set</option>
+              </select>
 
               {scheduleInfo.tingkatList.length > 1 && (
-                <div className="w-[150px]">
-                  <select
-                    value={classFilter}
-                    onChange={(e) => setClassFilter(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] shadow-sm transition-all cursor-pointer"
-                  >
-                    <option value="ALL">Semua Tingkat</option>
-                    {scheduleInfo.tingkatList.map((t) => (
-                      <option key={t.tingkat} value={t.tingkat}>
-                        {t.tingkat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <select
+                  value={classFilter}
+                  onChange={(e) => setClassFilter(e.target.value)}
+                  className="px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] shadow-sm cursor-pointer"
+                >
+                  <option value="ALL">Semua Tingkat</option>
+                  {scheduleInfo.tingkatList.map((t) => (
+                    <option key={t.tingkat} value={t.tingkat}>
+                      Tingkat {t.tingkat}
+                    </option>
+                  ))}
+                </select>
               )}
             </div>
 
-            {/* Mobile Filter Trigger (Only if > 1 filter) */}
-            {scheduleInfo.tingkatList.length > 1 && (
-              <div className="lg:hidden">
-                <MobileFilterDrawer
-                  isOpen={isMobileFilterOpen}
-                  onOpen={() => setIsMobileFilterOpen(true)}
-                  onClose={() => setIsMobileFilterOpen(false)}
-                  onReset={() => {
-                    setAttendanceFilter("ALL");
-                    setClassFilter("ALL");
-                  }}
-                  title="Filter Absensi Siswa"
-                >
-                  <div className="space-y-4 text-[13px]">
+            {/* Mobile Filter Modal Trigger (Only on mobile/tablet) */}
+            <div className="lg:hidden">
+              <MobileFilterDrawer
+                isOpen={isMobileFilterOpen}
+                onOpen={() => setIsMobileFilterOpen(true)}
+                onClose={() => setIsMobileFilterOpen(false)}
+                onReset={() => {
+                  setAttendanceFilter("ALL");
+                  setClassFilter("ALL");
+                }}
+                title="Filter Absensi Siswa"
+                className={`py-2.5 px-4 ${attendanceFilter !== "ALL" || classFilter !== "ALL" ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5" : ""}`}
+              >
+                <div className="space-y-4 text-[13px]">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                      Kehadiran
+                    </label>
+                    <select
+                      value={attendanceFilter}
+                      onChange={(e) => setAttendanceFilter(e.target.value as any)}
+                      className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    >
+                      <option value="ALL">Semua Status</option>
+                      <option value="PRESENT">Hadir</option>
+                      <option value="ABSENT">Tidak Hadir</option>
+                      <option value="UNSET">Belum Set</option>
+                    </select>
+                  </div>
+                  {scheduleInfo.tingkatList.length > 1 && (
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-                        Kehadiran
-                      </label>
-                      <select
-                        value={attendanceFilter}
-                        onChange={(e) => setAttendanceFilter(e.target.value as any)}
-                        className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)]"
-                      >
-                        <option value="ALL">Semua</option>
-                        <option value="PRESENT">Hadir</option>
-                        <option value="ABSENT">Tidak Hadir</option>
-                        <option value="UNSET">Belum Set</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-                        Tingkat
+                        Tingkat Kelas
                       </label>
                       <select
                         value={classFilter}
                         onChange={(e) => setClassFilter(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)]"
+                        className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                       >
                         <option value="ALL">Semua Tingkat</option>
                         {scheduleInfo.tingkatList.map((t) => (
                           <option key={t.tingkat} value={t.tingkat}>
-                            {t.tingkat}
+                            Tingkat {t.tingkat}
                           </option>
                         ))}
                       </select>
                     </div>
-                  </div>
-                </MobileFilterDrawer>
-              </div>
-            )}
+                  )}
+                </div>
+              </MobileFilterDrawer>
+            </div>
           </div>
 
           {/* Student List */}
@@ -575,67 +573,55 @@ export default function StudentAttendancePage() {
               </div>
             )}
 
-            <h3 className="text-[13px] font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+            <h3 className="text-[13px] font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
               <CheckCircle size={14} className="text-[var(--primary)]" />
               Ringkasan Kehadiran
             </h3>
 
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
-                <span className="text-[13px] font-medium text-[var(--text-secondary)]">
-                  Total Siswa
+            {/* Summary Stat Cards matching Riwayat Absensi style */}
+            <div className="grid grid-cols-4 gap-2 mb-5 text-center text-[12px]">
+              <div className="bg-[var(--surface-subtle)] border border-[var(--border)] p-2 rounded-lg">
+                <span className="block text-[10px] text-[var(--text-tertiary)] uppercase font-bold">
+                  Hadir
                 </span>
-                <span className="text-[14px] font-bold text-[var(--text-primary)]">
-                  {scheduleInfo.siswa.length}
+                <span className="font-bold text-[#0FBE85] text-[15px]">
+                  {summaryData.HADIR}
                 </span>
               </div>
+              <div className="bg-[var(--surface-subtle)] border border-[var(--border)] p-2 rounded-lg">
+                <span className="block text-[10px] text-[var(--text-tertiary)] uppercase font-bold">
+                  Sakit
+                </span>
+                <span className="font-bold text-amber-500 text-[15px]">
+                  {summaryData.SAKIT}
+                </span>
+              </div>
+              <div className="bg-[var(--surface-subtle)] border border-[var(--border)] p-2 rounded-lg">
+                <span className="block text-[10px] text-[var(--text-tertiary)] uppercase font-bold">
+                  Izin
+                </span>
+                <span className="font-bold text-blue-500 text-[15px]">
+                  {summaryData.IZIN}
+                </span>
+              </div>
+              <div className="bg-[var(--surface-subtle)] border border-[var(--border)] p-2 rounded-lg">
+                <span className="block text-[10px] text-[var(--text-tertiary)] uppercase font-bold">
+                  Alpa
+                </span>
+                <span className="font-bold text-rose-500 text-[15px]">
+                  {summaryData.ALPA}
+                </span>
+              </div>
+            </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-medium text-[var(--text-secondary)] flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[var(--primary)]"></div>{" "}
-                    Hadir
-                  </span>
-                  <span className="text-[14px] font-bold text-[var(--text-primary)]">
-                    {summaryData.HADIR}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-medium text-[var(--text-secondary)] flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>{" "}
-                    Sakit
-                  </span>
-                  <span className="text-[14px] font-bold text-[var(--text-primary)]">
-                    {summaryData.SAKIT}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-medium text-[var(--text-secondary)] flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-amber-500"></div>{" "}
-                    Izin
-                  </span>
-                  <span className="text-[14px] font-bold text-[var(--text-primary)]">
-                    {summaryData.IZIN}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-medium text-[var(--text-secondary)] flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-rose-500"></div>{" "}
-                    Alpa
-                  </span>
-                  <span className="text-[14px] font-bold text-[var(--text-primary)]">
-                    {summaryData.ALPA}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)]">
-                  <span className="text-[13px] font-medium text-[var(--text-tertiary)] flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[var(--border-subtle)] border border-[var(--border)]"></div>{" "}
-                    Belum diset
-                  </span>
-                  <span className="text-[14px] font-bold text-[var(--text-primary)]">
-                    {summaryData.BELUM}
-                  </span>
-                </div>
+            <div className="space-y-2 mb-6 text-[13px]">
+              <div className="flex items-center justify-between text-[var(--text-secondary)]">
+                <span>Belum Diset</span>
+                <span className="font-bold text-[var(--text-primary)]">{summaryData.BELUM}</span>
+              </div>
+              <div className="flex items-center justify-between text-[var(--text-secondary)] pt-2 border-t border-[var(--border-subtle)]">
+                <span>Total Siswa</span>
+                <span className="font-bold text-[var(--text-primary)]">{scheduleInfo.siswa.length}</span>
               </div>
             </div>
 

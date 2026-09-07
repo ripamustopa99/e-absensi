@@ -87,22 +87,6 @@ async function main() {
 
     await client.query(`
       DO $$ BEGIN
-        CREATE TYPE "JenisPengajuan" AS ENUM ('IZIN', 'SAKIT', 'CUTI');
-      EXCEPTION
-        WHEN duplicate_object THEN null;
-      END $$;
-    `);
-
-    await client.query(`
-      DO $$ BEGIN
-        CREATE TYPE "StatusApproval" AS ENUM ('MENUNGGU', 'DISETUJUI', 'DITOLAK');
-      EXCEPTION
-        WHEN duplicate_object THEN null;
-      END $$;
-    `);
-
-    await client.query(`
-      DO $$ BEGIN
         CREATE TYPE "JenisHariKalender" AS ENUM ('LIBUR_NASIONAL', 'CUTI_BERSAMA', 'KEGIATAN_SEKOLAH');
       EXCEPTION
         WHEN duplicate_object THEN null;
@@ -265,24 +249,6 @@ async function main() {
       );
     `);
 
-    // Create pengajuan_izin table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS pengajuan_izin (
-        id VARCHAR(255) PRIMARY KEY,
-        "guruId" VARCHAR(255) REFERENCES users(id) NOT NULL,
-        jenis "JenisPengajuan" NOT NULL,
-        "tanggalMulai" DATE NOT NULL,
-        "tanggalSelesai" DATE NOT NULL,
-        keterangan TEXT NOT NULL,
-        "lampiranUrl" TEXT,
-        status "StatusApproval" DEFAULT 'MENUNGGU',
-        "catatanAdmin" TEXT,
-        "diprosesOlehId" VARCHAR(255) REFERENCES users(id),
-        "diprosesPada" TIMESTAMP,
-        "createdAt" TIMESTAMP DEFAULT NOW()
-      );
-    `);
-
     // Create kalender_akademik table
     await client.query(`
       CREATE TABLE IF NOT EXISTS kalender_akademik (
@@ -389,7 +355,7 @@ async function main() {
     const faqCheck = await client.query('SELECT COUNT(*) FROM faq');
     if (parseInt(faqCheck.rows[0].count) === 0) {
       const defaultFaqs = [
-        { id: 'faq-1', q: 'Bagaimana cara melakukan absensi harian bagi guru?', a: "Masuk ke menu Guru, pilih 'Absensi' atau 'Absensi Hari Ini', lalu klik tombol Check-In saat berada di jam jadwal mengajar Anda.", urutan: 1 },
+        { id: 'faq-1', q: 'Bagaimana cara melakukan absensi harian bagi guru?', a: "Masuk ke menu Guru, pilih 'Absensi', lalu klik tombol Check-In saat berada di jam jadwal mengajar Anda.", urutan: 1 },
         { id: 'faq-2', q: 'Bagaimana cara merekap kehadiran siswa per kelas?', a: "Buka menu Rekap di sidebar, pilih 'Absensi Siswa', lalu pilih kelas dan rentang tanggal yang ingin direkap atau di-export.", urutan: 2 },
         { id: 'faq-3', q: 'Bagaimana cara mengajukan izin atau sakit?', a: "Anda dapat mengajukan izin melalui menu profil atau pengajuan izin yang tersedia pada sistem portal akademik.", urutan: 3 },
         { id: 'faq-4', q: 'Bagaimana sistem keamanan login di portal ini?', a: "Portal ini menggunakan kode unik / NIP min. 6 digit dan password berstandar hashing Bcrypt. Sesi diamankan dengan HttpOnly & Secure cookies tanpa menyimpan token sensitif di localStorage.", urutan: 4 }

@@ -26,6 +26,7 @@ type ScheduleItem = {
   jamSelesai: string;
   mapel: { id: string; nama: string };
   kelas: { id: string; namaKelas: string; jenjang: string };
+  jumlahSiswa?: number;
 };
 
 type Pengumuman = {
@@ -140,7 +141,7 @@ export default function GuruDashboardPage() {
     fetchDashboardData();
   }, [todayHari, todayIso]);
 
-  const totalStudentsToday = schedules.reduce((acc, s) => acc + 32, 0); // Approx students per class
+  const totalStudentsToday = schedules.reduce((acc, s) => acc + (s.jumlahSiswa || 0), 0);
 
   if (loading) {
     return (

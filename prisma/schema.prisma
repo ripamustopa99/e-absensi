@@ -46,18 +46,6 @@ enum StatusSiswa {
   LULUS
 }
 
-enum JenisPengajuan {
-  IZIN
-  SAKIT
-  CUTI
-}
-
-enum StatusApproval {
-  MENUNGGU
-  DISETUJUI
-  DITOLAK
-}
-
 enum JenisHariKalender {
   LIBUR_NASIONAL
   CUTI_BERSAMA
@@ -88,8 +76,6 @@ model User {
   jadwalSebagaiGuru  JadwalMengajar[]  @relation("GuruUtama")
   jadwalSebagaiPengganti JadwalMengajar[] @relation("GuruPengganti")
   absensiGuru        AbsensiGuru[]
-  pengajuanIzin      PengajuanIzin[]   @relation("PengajuIzin")
-  izinDiproses       PengajuanIzin[]   @relation("ApproverIzin")
   pengumuman         Pengumuman[]
   pengumumanDibaca   PengumumanDibaca[]
   logAktivitas       LogAktivitas[]
@@ -244,25 +230,6 @@ model AbsensiSiswa {
   @@unique([jadwalId, siswaId, tanggal])
   @@index([siswaId, tanggal])
   @@map("absensi_siswa")
-}
-
-model PengajuanIzin {
-  id             String          @id @default(cuid())
-  guruId         String
-  guru           User            @relation("PengajuIzin", fields: [guruId], references: [id])
-  jenis          JenisPengajuan
-  tanggalMulai   DateTime        @db.Date
-  tanggalSelesai DateTime        @db.Date
-  keterangan     String
-  lampiranUrl    String?
-  status         StatusApproval  @default(MENUNGGU)
-  catatanAdmin   String?
-  diprosesOlehId String?
-  diprosesOleh   User?           @relation("ApproverIzin", fields: [diprosesOlehId], references: [id])
-  diprosesPada   DateTime?
-  createdAt      DateTime        @default(now())
-
-  @@map("pengajuan_izin")
 }
 
 model KalenderAkademik {

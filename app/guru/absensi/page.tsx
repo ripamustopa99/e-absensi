@@ -200,7 +200,14 @@ export default function AbsensiPage() {
     { id: string; label: string; isAktif: boolean }[]
   >([]);
   const [searchRiwayat, setSearchRiwayat] = useState("");
-  void setRiwayatPage; void riwayatTotalPages; void riwayatTotal; void filterTahun; void filterBulan; void setFilterBulan; void tahunAjaranList; void setSearchRiwayat;
+  void setRiwayatPage;
+  void riwayatTotalPages;
+  void riwayatTotal;
+  void filterTahun;
+  void filterBulan;
+  void setFilterBulan;
+  void tahunAjaranList;
+  void setSearchRiwayat;
 
   const [selectedJadwal, setSelectedJadwal] = useState<AttendanceCard | null>(
     null,
@@ -349,7 +356,7 @@ export default function AbsensiPage() {
 
   return (
     <div className="space-y-8 pb-10">
-      <div className="max-w-5xl mx-auto space-y-8 px-4 sm:px-0">
+      <div className="max-w-5xl mx-auto space-y-8">
         {/* =========================================
             BAGIAN 1: ABSENSI HARI INI
             ========================================= */}
@@ -426,9 +433,6 @@ export default function AbsensiPage() {
         <div className="space-y-6 pt-6 border-t border-[var(--border)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
-                <UserCheck size={20} />
-              </div>
               <div>
                 <h2 className="text-lg font-bold text-[var(--text-primary)]">
                   Riwayat Absensi Terakhir
@@ -446,7 +450,7 @@ export default function AbsensiPage() {
             </Link>
           </div>
 
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">
+          <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
             <DataTable
               loading={isLoadingRiwayat}
               data={filteredRiwayat.slice(0, 7)}

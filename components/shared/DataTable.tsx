@@ -73,7 +73,7 @@ export default function DataTable<T>({
 
       {/* Mobile Card / List View */}
       {renderMobileCard && (
-        <div className="sm:hidden space-y-3 p-3">
+        <div className="sm:hidden space-y-3">
           {data.map((item, index) => renderMobileCard(item, index))}
         </div>
       )}

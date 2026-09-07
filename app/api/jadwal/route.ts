@@ -99,10 +99,24 @@ export async function GET(request: Request) {
         // ignore
       }
 
+      let jumlahSiswa = 0;
+      try {
+        if (tingkatList.length > 0) {
+          const siswaRes = await query(
+            `SELECT COUNT(*) as count FROM siswa WHERE status = 'AKTIF' AND jenjang = $1 AND tingkat = ANY($2::text[])`,
+            [row.jenjang, tingkatList]
+          );
+          jumlahSiswa = parseInt(siswaRes.rows[0]?.count || "0", 10);
+        }
+      } catch (e) {
+        // ignore
+      }
+
       schedules.push({
         ...row,
         namaHari: HARI_MAP[row.hari] || "Hari",
         tingkatList,
+        jumlahSiswa,
         statusAbsensi: {
           sudahAbsen,
           isBisaAbsen: true,

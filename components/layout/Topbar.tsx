@@ -25,6 +25,7 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [recentAnnouncements, setRecentAnnouncements] = useState<any[]>([]);
+  const [isLoadingNotif, setIsLoadingNotif] = useState(false);
   const [_systemAlerts, _setSystemAlerts] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -128,6 +129,7 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
     setNotificationsOpen(nextOpen);
     setDropdownOpen(false);
     if (nextOpen) {
+      setIsLoadingNotif(true);
       try {
         const res = await api.get<{ data: any[] }>("/notifikasi").catch(() => ({ data: { data: [] } }));
         const list = (res.data as any).data ?? (Array.isArray(res.data) ? res.data : []);
@@ -137,6 +139,8 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
         setUnreadCount(0);
       } catch (err) {
         console.error(err);
+      } finally {
+        setIsLoadingNotif(false);
       }
     }
   };
@@ -205,7 +209,7 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
           </button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="fixed sm:absolute left-3 sm:left-auto right-3 sm:right-0 top-14 sm:top-full mt-2 sm:w-80 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="px-4 py-2 border-b border-[var(--border)] flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BellRing size={16} className="text-primary" />
@@ -214,7 +218,15 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
               </div>
 
               <div className="max-h-[280px] overflow-y-auto divide-y divide-[var(--border-subtle)] custom-scrollbar">
-                {recentAnnouncements.length === 0 ? (
+                {isLoadingNotif ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="p-3 space-y-2 animate-pulse">
+                      <div className="h-3.5 bg-[var(--surface-subtle)] rounded w-3/4"></div>
+                      <div className="h-3 bg-[var(--surface-subtle)] rounded w-full"></div>
+                      <div className="h-2.5 bg-[var(--surface-subtle)] rounded w-1/4 mt-1"></div>
+                    </div>
+                  ))
+                ) : recentAnnouncements.length === 0 ? (
                   <p className="text-center py-6 text-[12px] text-[var(--text-tertiary)]">Tidak ada notifikasi.</p>
                 ) : (
                   recentAnnouncements.map((item) => {

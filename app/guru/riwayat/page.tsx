@@ -220,9 +220,9 @@ export default function RiwayatSiswaPage() {
       </div>
 
       {/* Main Card */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">
+      <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
         {/* Toolbar */}
-        <div className="p-4 border-b border-[var(--border)] bg-[#F6F8F7] dark:bg-[var(--surface-subtle)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="py-3 px-0 sm:p-4 sm:border-b sm:border-[var(--border)] sm:bg-[#F6F8F7] sm:dark:bg-[var(--surface-subtle)] bg-transparent dark:bg-transparent flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="relative w-full md:max-w-sm">
             <Search
               size={14}

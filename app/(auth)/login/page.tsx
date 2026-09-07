@@ -64,15 +64,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] p-4 sm:p-6 lg:p-8 relative overflow-hidden transition-colors duration-200">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] p-0 sm:p-6 lg:p-8 relative overflow-hidden transition-colors duration-200">
       {/* Background decoration */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
 
       {/* Main Container */}
-      <div className="w-full max-w-[900px] bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xl overflow-hidden flex flex-col md:flex-row min-h-[550px] relative z-10">
+      <div className="w-full max-w-[900px] md:bg-[var(--surface)] md:border md:border-[var(--border)] md:rounded-xl md:shadow-xl bg-[var(--surface)] border-0 shadow-none rounded-none overflow-hidden flex flex-col md:flex-row min-h-screen md:min-h-[550px] relative z-10 justify-center">
         {/* Left Side - Form Section */}
-        <div className="w-full md:w-1/2 p-8 sm:p-10 flex flex-col justify-between bg-[var(--surface)]">
+        <div className="w-full md:w-1/2 p-5 sm:p-10 flex flex-col justify-between bg-[var(--surface)]">
           <div className="w-full max-w-[380px] mx-auto">
             {/* Logo / Brand Header */}
             <div className="flex items-center gap-2 mb-10">

@@ -431,8 +431,8 @@ export default function KehadiranGuruPage() {
           </div>
 
           {/* ─── Data Table Section Using Reusable DataTable & Pagination ─── */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden relative">
-            <div className="p-4 border-b border-[var(--border)] bg-[#F6F8F7] dark:bg-[var(--surface-subtle)] flex items-center justify-between gap-4">
+          <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible relative">
+            <div className="py-3 px-0 sm:p-4 sm:border-b sm:border-[var(--border)] sm:bg-[#F6F8F7] sm:dark:bg-[var(--surface-subtle)] bg-transparent dark:bg-transparent flex items-center justify-between gap-4">
               <span className="text-[12px] font-bold text-[var(--text-secondary)] uppercase">Data Kehadiran</span>
             </div>
 

@@ -21,6 +21,7 @@ import ConfirmModal from "@/components/shared/ConfirmModal";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
 import Pagination from "@/components/shared/Pagination";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 
 type JadwalAdmin = {
   id: string;
@@ -99,148 +100,98 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
     setPage(1);
   }, [search, filterTA, filterTingkat, filterGuru, filterHari]);
 
-  const fetchJadwal = useCallback(async () => {
+  const fetchJadwalAndOptions = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      params.append("jenjang", jenjang);
-      if (filterTA !== "ALL") params.append("tahunAjaranId", filterTA);
-      if (filterTingkat !== "ALL") params.append("tingkat", filterTingkat);
-      if (filterGuru !== "ALL") params.append("guruId", filterGuru);
-      if (filterHari !== "ALL") params.append("hari", filterHari);
-      params.append("page", page.toString());
-      params.append("limit", limit.toString());
+      params.set("jenjang", jenjang);
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+      if (search) params.set("search", search);
+      if (filterTA !== "ALL") params.set("tahunAjaranId", filterTA);
+      if (filterTingkat !== "ALL") params.set("tingkat", filterTingkat);
+      if (filterGuru !== "ALL") params.set("guruId", filterGuru);
+      if (filterHari !== "ALL") params.set("hari", filterHari);
 
-      const qs = params.toString();
-      const res = await api.get<{ data: JadwalAdmin[], total: number, totalPages: number }>(`/jadwal/admin${qs ? `?${qs}` : ""}`);
-      setJadwalList(res.data.data);
-      setTotal(res.data.total);
-      setTotalPages(res.data.totalPages || 1);
-    } catch {
-      toast.error("Gagal memuat jadwal");
+      const [resJadwal, resOptions] = await Promise.all([
+        api.get<{ success: true; data: { jadwal: JadwalAdmin[]; total: number; totalPages: number } }>(`/jadwal/admin?${params.toString()}`),
+        options ? Promise.resolve(null) : api.get<{ success: true; data: FormOptions }>("/jadwal/admin/options")
+      ]);
+
+      setJadwalList(resJadwal.data.data.jadwal);
+      setTotal(resJadwal.data.data.total);
+      setTotalPages(resJadwal.data.data.totalPages);
+
+      if (resOptions) {
+        setOptions(resOptions.data.data);
+      }
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      toast.error(error.response?.data?.message ?? "Gagal memuat data jadwal");
     } finally {
       setLoading(false);
     }
-  }, [jenjang, filterTA, filterTingkat, filterGuru, filterHari, page, limit]);
-
-  const fetchOptions = useCallback(async () => {
-    try {
-      const res = await api.get<{ data: FormOptions }>("/jadwal/admin/options");
-      setOptions(res.data.data);
-
-      const activeTa = res.data.data.tahunAjaran.find(t => t.isAktif);
-      if (activeTa) {
-        setFilterTA(activeTa.id);
-      }
-    } catch {
-      toast.error("Gagal memuat opsi master data");
-    }
-  }, []);
+  }, [jenjang, page, limit, search, filterTA, filterTingkat, filterGuru, filterHari, options]);
 
   useEffect(() => {
-    fetchOptions();
-  }, [fetchOptions]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => fetchJadwal(), 300);
-    return () => clearTimeout(timer);
-  }, [fetchJadwal]);
-
-  const availableMapelForm = useMemo(() => {
-    if (!options) return [];
-    return options.mapel.filter(m => m.jenjang === jenjang);
-  }, [options, jenjang]);
+    fetchJadwalAndOptions();
+  }, [fetchJadwalAndOptions]);
 
   const openAddModal = () => {
+    setFormData(DEFAULT_FORM);
     setEditId(null);
     setConflictError(null);
-    setFormData({
-      ...DEFAULT_FORM,
-      tahunAjaranId: filterTA !== "ALL" ? filterTA : (options?.tahunAjaran.find(t => t.isAktif)?.id ?? ""),
-    });
     setIsModalOpen(true);
   };
 
-  const openEditModal = (jadwal: JadwalAdmin) => {
-    setEditId(jadwal.id);
-    setConflictError(null);
+  const openEditModal = (item: JadwalAdmin) => {
     setFormData({
-      guruId: jadwal.guru?.id ?? "",
-      mapelId: jadwal.mapel?.id ?? "",
-      jenjang: jadwal.jenjang,
-      semester: jadwal.semester as 'GANJIL' | 'GENAP',
-      tingkatList: jadwal.tingkatList.map(t => t.tingkat),
-      tahunAjaranId: jadwal.tahunAjaran?.id ?? "",
-      hari: jadwal.hari,
-      jamMulai: jadwal.jamMulai,
-      jamSelesai: jadwal.jamSelesai,
+      guruId: item.guru?.id ?? "",
+      mapelId: item.mapel?.id ?? "",
+      jenjang: item.jenjang,
+      semester: item.semester,
+      tingkatList: item.tingkatList.map(t => t.tingkat),
+      tahunAjaranId: item.tahunAjaran?.id ?? "",
+      hari: item.hari,
+      jamMulai: item.jamMulai,
+      jamSelesai: item.jamSelesai,
     });
-
-    setIsModalOpen(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.guruId || !formData.mapelId || formData.tingkatList.length === 0 || !formData.tahunAjaranId) {
-      toast.error("Semua field wajib diisi");
-      return;
-    }
-
-    setIsSubmitting(true);
+    setEditId(item.id);
     setConflictError(null);
-
-    try {
-      if (editId) {
-        const res = await api.put<{ message: string; warning?: string }>(`/jadwal/admin/${editId}`, formData);
-        if (res.data.warning) {
-          setConflictError(res.data.warning);
-          toast.warning(res.data.warning);
-        } else {
-          toast.success(res.data.message || "Jadwal berhasil diperbarui");
-          setIsModalOpen(false);
-          fetchJadwal();
-        }
-      } else {
-        const res = await api.post<{ message: string; warning?: string }>("/jadwal/admin", formData);
-        if (res.data.warning) {
-          setConflictError(res.data.warning);
-          toast.warning(res.data.warning);
-        } else {
-          toast.success(res.data.message || "Jadwal berhasil ditambahkan");
-          setIsModalOpen(false);
-          fetchJadwal();
-        }
-      }
-    } catch (err) {
-      const error = err as AxiosError<{ success: false; message: string }>;
-      toast.error(error.response?.data?.message ?? "Terjadi kesalahan saat menyimpan jadwal");
-    } finally {
-      setIsSubmitting(false);
-    }
+    setIsModalOpen(true);
   };
 
   const handleImportJadwal = () => {
     setIsImportModalOpen(true);
   };
 
-  const getStudentCount = (t: string) => {
-    if (!options?.studentCounts) return 1;
-    const found = options.studentCounts.find((sc: any) => sc.jenjang === jenjang && sc.tingkat === t);
-    return found ? Number(found.count) : 0;
-  };
-
-  const toggleTingkat = (tingkat: string) => {
-    const count = getStudentCount(tingkat);
-    if (count === 0) {
-      toast.error(`Tingkat ${tingkat} (${jenjang}) tidak dapat dipilih karena belum memiliki data siswa aktif.`);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.tahunAjaranId || !formData.mapelId || formData.tingkatList.length === 0) {
+      toast.error("Mohon lengkapi Tahun Ajaran, Mata Pelajaran, dan minimal 1 Tingkat kelas");
       return;
     }
-    setFormData(prev => ({
-      ...prev,
-      tingkatList: prev.tingkatList.includes(tingkat)
-        ? prev.tingkatList.filter(t => t !== tingkat)
-        : [...prev.tingkatList, tingkat]
-    }));
+
+    setIsSubmitting(true);
+    setConflictError(null);
+    try {
+      if (editId) {
+        await api.put(`/jadwal/admin/${editId}`, formData);
+        toast.success("Jadwal mengajar berhasil diperbarui!");
+      } else {
+        await api.post("/jadwal/admin", formData);
+        toast.success("Jadwal mengajar berhasil ditambahkan!");
+      }
+      setIsModalOpen(false);
+      fetchJadwalAndOptions();
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      const msg = error.response?.data?.message ?? "Gagal menyimpan jadwal";
+      setConflictError(msg);
+      toast.error(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -248,101 +199,85 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
     setIsDeleting(true);
     try {
       await api.delete(`/jadwal/admin/${deleteTarget.id}`);
-      toast.success("Jadwal berhasil dihapus");
+      toast.success("Jadwal mengajar berhasil dihapus!");
       setDeleteTarget(null);
-      fetchJadwal();
+      fetchJadwalAndOptions();
     } catch (err) {
-      const error = err as AxiosError<{ success: false; message: string }>;
+      const error = err as AxiosError<{ message: string }>;
       toast.error(error.response?.data?.message ?? "Gagal menghapus jadwal");
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const filteredJadwal = useMemo(() => {
-    if (!search) return jadwalList;
-    const lower = search.toLowerCase();
-    return jadwalList.filter(j => 
-      j.mapel?.nama?.toLowerCase().includes(lower) ||
-      (j.guru?.nama ?? "").toLowerCase().includes(lower) ||
-      j.tingkatList.some(t => t.tingkat.toLowerCase().includes(lower))
-    );
-  }, [jadwalList, search]);
+  const filteredJadwal = useMemo(() => jadwalList, [jadwalList]);
 
   const desktopFilters = (
-    <>
+    <div className="flex items-center gap-3">
       <select
         value={filterTA}
         onChange={(e) => setFilterTA(e.target.value)}
-        className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[12px] font-medium text-[var(--text-primary)] outline-none cursor-pointer"
+        className="px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] outline-none cursor-pointer"
       >
         <option value="ALL">Semua Tahun Ajaran</option>
-        {options?.tahunAjaran.map(ta => (
-          <option key={ta.id} value={ta.id}>{ta.label}</option>
-        ))}
+        {options?.tahunAjaran.map(ta => <option key={ta.id} value={ta.id}>{ta.label}</option>)}
       </select>
 
       <select
         value={filterTingkat}
         onChange={(e) => setFilterTingkat(e.target.value)}
-        className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[12px] font-medium text-[var(--text-primary)] outline-none cursor-pointer"
+        className="px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] outline-none cursor-pointer"
       >
         <option value="ALL">Semua Tingkat</option>
-        {availableTingkat.map(t => (
-          <option key={t} value={t}>Tingkat {t}</option>
-        ))}
+        {availableTingkat.map(t => <option key={t} value={t}>Tingkat {t}</option>)}
       </select>
 
       <select
         value={filterGuru}
         onChange={(e) => setFilterGuru(e.target.value)}
-        className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[12px] font-medium text-[var(--text-primary)] outline-none cursor-pointer"
+        className="px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] outline-none cursor-pointer"
       >
         <option value="ALL">Semua Guru</option>
-        {options?.guru.map(g => (
-          <option key={g.id} value={g.id}>{g.nama}</option>
-        ))}
+        {options?.guru.map(g => <option key={g.id} value={g.id}>{g.nama}</option>)}
       </select>
 
       <select
         value={filterHari}
         onChange={(e) => setFilterHari(e.target.value)}
-        className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[12px] font-medium text-[var(--text-primary)] outline-none cursor-pointer"
+        className="px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] outline-none cursor-pointer"
       >
         <option value="ALL">Semua Hari</option>
-        {Object.entries(HARI_MAP).map(([val, label]) => (
-          <option key={val} value={val}>{label}</option>
-        ))}
+        {Object.entries(HARI_MAP).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
       </select>
-    </>
+    </div>
   );
 
   const mobileFilters = (
     <div className="space-y-4 text-[13px]">
       <div className="space-y-1.5">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tahun Ajaran</label>
-        <select value={filterTA} onChange={(e) => setFilterTA(e.target.value)} className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none cursor-pointer">
+        <select value={filterTA} onChange={(e) => setFilterTA(e.target.value)} className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none">
           <option value="ALL">Semua Tahun Ajaran</option>
           {options?.tahunAjaran.map(ta => <option key={ta.id} value={ta.id}>{ta.label}</option>)}
         </select>
       </div>
       <div className="space-y-1.5">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tingkat</label>
-        <select value={filterTingkat} onChange={(e) => setFilterTingkat(e.target.value)} className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none cursor-pointer">
+        <select value={filterTingkat} onChange={(e) => setFilterTingkat(e.target.value)} className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none">
           <option value="ALL">Semua Tingkat</option>
           {availableTingkat.map(t => <option key={t} value={t}>Tingkat {t}</option>)}
         </select>
       </div>
       <div className="space-y-1.5">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Guru</label>
-        <select value={filterGuru} onChange={(e) => setFilterGuru(e.target.value)} className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none cursor-pointer">
+        <select value={filterGuru} onChange={(e) => setFilterGuru(e.target.value)} className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none">
           <option value="ALL">Semua Guru</option>
           {options?.guru.map(g => <option key={g.id} value={g.id}>{g.nama}</option>)}
         </select>
       </div>
       <div className="space-y-1.5">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Hari</label>
-        <select value={filterHari} onChange={(e) => setFilterHari(e.target.value)} className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none cursor-pointer">
+        <select value={filterHari} onChange={(e) => setFilterHari(e.target.value)} className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none">
           <option value="ALL">Semua Hari</option>
           {Object.entries(HARI_MAP).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
         </select>
@@ -353,41 +288,34 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 bg-primary/10 text-primary rounded-md text-[11px] font-bold uppercase tracking-wider">
-              Jenjang {jenjang}
-            </span>
-            <span className="text-[12px] text-[var(--text-tertiary)]">| Manajemen Jadwal</span>
-          </div>
-          <h1 className="text-xl font-bold text-[var(--text-primary)] mt-1">
-            Jadwal Mengajar {jenjang}
-          </h1>
-          <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
-            Atur jadwal jam pelajaran guru dan tingkat kelas {jenjang}.
-          </p>
-        </div>
-        <div className="flex flex-row items-center gap-2.5 w-full sm:w-auto">
-          <button
-            onClick={handleImportJadwal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] transition-all shadow-sm flex-1 sm:w-auto"
-          >
-            <CalendarDays size={16} />
-            <span className="truncate">Import</span>
-          </button>
-          <button
-            onClick={openAddModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-primary-hover transition-all shadow-sm flex-1 sm:w-auto"
-          >
-            <Plus size={16} />
-            <span className="truncate">Tambah</span>
-          </button>
-        </div>
-      </div>
+      <AdminHeader
+        variant="jenjang"
+        jenjang={jenjang}
+        moduleLabel="Manajemen Jadwal"
+        title={`Jadwal Mengajar ${jenjang}`}
+        description={`Atur jadwal jam pelajaran guru dan tingkat kelas ${jenjang}.`}
+        actions={
+          <>
+            <button
+              onClick={handleImportJadwal}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] transition-all shadow-sm flex-1 sm:w-auto cursor-pointer"
+            >
+              <CalendarDays size={16} />
+              <span className="truncate">Import</span>
+            </button>
+            <button
+              onClick={openAddModal}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-primary-hover transition-all shadow-sm flex-1 sm:w-auto cursor-pointer"
+            >
+              <Plus size={16} />
+              <span className="truncate">Tambah</span>
+            </button>
+          </>
+        }
+      />
 
       {/* Main Card */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">
+      <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
         {/* Module Toolbar */}
         <ModuleToolbar
           search={search}
@@ -530,57 +458,16 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tingkat Kelas ({jenjang}) <span className="text-rose-500">*</span></label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-1">
-              {availableTingkat.map(t => {
-                const count = getStudentCount(t);
-                const hasNoStudents = count === 0;
-                const checked = formData.tingkatList.includes(t);
-                return (
-                  <div
-                    key={t}
-                    onClick={() => {
-                      if (hasNoStudents) {
-                        toast.error(`Tingkat ${t} (${jenjang}) tidak dapat dipilih karena belum memiliki data siswa aktif.`);
-                        return;
-                      }
-                      toggleTingkat(t);
-                    }}
-                    className={`px-3 py-2 rounded-lg border text-[12px] font-medium flex items-center justify-between gap-2 transition-all ${
-                      hasNoStudents
-                        ? "bg-gray-100 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed opacity-60"
-                        : checked
-                        ? "text-white shadow-sm"
-                        : "bg-[var(--surface)] border-[var(--border)] text-[var(--text-primary)] hover:border-primary cursor-pointer"
-                    }`}
-                    style={!hasNoStudents && checked ? { backgroundColor: "var(--primary)", borderColor: "var(--primary)" } : undefined}
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      {checked ? <CheckSquare size={14} className="shrink-0" /> : <Square size={14} className="shrink-0 opacity-50" />}
-                      <span className="truncate">Tingkat {t}</span>
-                    </div>
-                    {hasNoStudents && (
-                      <span className="text-[10px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-1.5 py-0.5 rounded shrink-0">
-                        Belum ada siswa
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Mata Pelajaran ({jenjang}) <span className="text-rose-500">*</span></label>
+              <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Mata Pelajaran <span className="text-rose-500">*</span></label>
               <select
                 value={formData.mapelId}
                 onChange={(e) => setFormData(prev => ({ ...prev, mapelId: e.target.value }))}
                 className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none cursor-pointer"
               >
-                <option value="">-- Pilih Mapel --</option>
-                {availableMapelForm.map(m => (
+                <option value="">-- Pilih Mata Pelajaran --</option>
+                {options?.mapel.filter(m => m.jenjang === jenjang).map(m => (
                   <option key={m.id} value={m.id}>{m.nama}</option>
                 ))}
               </select>
@@ -595,9 +482,40 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
               >
                 <option value="">-- Pilih Guru --</option>
                 {options?.guru.map(g => (
-                  <option key={g.id} value={g.id}>{g.nama}</option>
+                  <option key={g.id} value={g.id}>{g.nama} ({g.kodeAkses})</option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tingkat Kelas <span className="text-rose-500">*</span></label>
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              {availableTingkat.map(t => {
+                const isSelected = formData.tingkatList.includes(t);
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        tingkatList: isSelected
+                          ? prev.tingkatList.filter(item => item !== t)
+                          : [...prev.tingkatList, t]
+                      }));
+                    }}
+                    className={`py-2 px-3 rounded-[var(--radius-md)] border text-[12px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      isSelected
+                        ? "bg-primary text-white border-primary shadow-sm"
+                        : "bg-[var(--surface-subtle)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--border)]"
+                    }`}
+                  >
+                    {isSelected ? <CheckSquare size={14}/> : <Square size={14}/>}
+                    Tingkat {t}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -636,78 +554,98 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border)]">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              disabled={isSubmitting}
-              className="px-5 py-2.5 text-[13px] font-bold text-[var(--text-secondary)] bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)]"
+              className="px-4 py-2.5 border border-[var(--border)] text-[var(--text-primary)] text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2.5 text-white text-[13px] font-bold rounded-[var(--radius-md)] disabled:opacity-60 flex items-center gap-2"
-              style={{ backgroundColor: "var(--primary)" }}
+              className="px-5 py-2.5 bg-primary text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-primary-hover transition-colors shadow-sm disabled:opacity-50 cursor-pointer flex items-center gap-2"
             >
-              {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-              {editId ? "Perbarui Jadwal" : "Simpan Jadwal"}
+              {isSubmitting && <Loader2 size={15} className="animate-spin" />}
+              {editId ? "Simpan Perubahan" : "Tambah Jadwal"}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Import Modal */}
-      <Modal
+      {/* Modal Import */}
+      <ImportJadwalModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        title="Import Jadwal"
-        description="Salin data jadwal dari tahun ajaran sebelumnya"
-        maxWidth="sm"
-      >
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tahun Ajaran Sumber</label>
-            <select id="sourceTA" className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none">
-              <option value="">-- Pilih Tahun Ajaran Sumber --</option>
-              {options?.tahunAjaran.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
-            </select>
-          </div>
-          <div className="flex justify-end gap-3 pt-2 border-t border-[var(--border)]">
-            <button onClick={() => setIsImportModalOpen(false)} className="px-4 py-2.5 text-[13px] font-bold border border-[var(--border)] rounded-[var(--radius-md)]">Batal</button>
-            <button 
-              onClick={async () => {
-                const sourceTA = (document.getElementById('sourceTA') as HTMLSelectElement).value;
-                if (!sourceTA) { toast.error("Pilih tahun ajaran sumber"); return; }
-                try {
-                  await api.post("/jadwal/admin/import", { sourceTahunAjaranId: sourceTA, targetTahunAjaranId: filterTA });
-                  toast.success("Jadwal berhasil diimpor");
-                  setIsImportModalOpen(false);
-                  fetchJadwal();
-                } catch {
-                  toast.error("Gagal mengimpor jadwal");
-                }
-              }}
-              className="px-5 py-2.5 text-white text-[13px] font-bold rounded-[var(--radius-md)]"
-              style={{ backgroundColor: "var(--primary)" }}
-            >
-              Import
-            </button>
-          </div>
-        </div>
-      </Modal>
+        jenjang={jenjang}
+        onSuccess={() => {
+          setIsImportModalOpen(false);
+          fetchJadwalAndOptions();
+        }}
+      />
 
-      {/* Delete Confirmation Modal */}
+      {/* Confirm Delete */}
       <ConfirmModal
-        isOpen={!!deleteTarget}
+        isOpen={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Hapus Jadwal?"
-        message={`Yakin ingin menghapus jadwal ${deleteTarget?.mapel.nama} (Tingkat ${deleteTarget?.tingkatList.map(t => t.tingkat).join(', ')})?`}
+        title="Hapus Jadwal Mengajar"
+        message={`Apakah Anda yakin ingin menghapus jadwal ${deleteTarget?.mapel?.nama ?? ""} pada hari ${deleteTarget?.namaHari ?? ""}?`}
         isDeleting={isDeleting}
-        confirmText="Ya, Hapus"
       />
     </div>
+  );
+}
+
+function ImportJadwalModal({ isOpen, onClose, jenjang, onSuccess }: { isOpen: boolean; onClose: () => void; jenjang: string; onSuccess: () => void }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) {
+      toast.error("Pilih file excel/csv terlebih dahulu");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("jenjang", jenjang);
+
+    setLoading(true);
+    try {
+      const res = await api.post("/jadwal/admin/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      toast.success(res.data.message || "Berhasil mengimport jadwal");
+      onSuccess();
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      toast.error(error.response?.data?.message || "Gagal import jadwal");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={`Import Jadwal (${jenjang})`} description="Upload file excel/csv untuk import jadwal" maxWidth="md">
+      <form onSubmit={handleImport} className="space-y-4">
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">File Excel / CSV</label>
+          <input
+            type="file"
+            accept=".xlsx, .xls, .csv"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="w-full text-[13px] text-[var(--text-primary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[12px] file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/25 cursor-pointer"
+          />
+        </div>
+        <div className="flex justify-end gap-2 pt-3 border-t border-[var(--border)]">
+          <button type="button" onClick={onClose} className="px-4 py-2 border border-[var(--border)] text-[var(--text-primary)] text-[12px] font-bold rounded-xl">Batal</button>
+          <button type="submit" disabled={loading} className="px-4 py-2 bg-primary text-white text-[12px] font-bold rounded-xl flex items-center gap-2">
+            {loading && <Loader2 size={14} className="animate-spin"/>} Import
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

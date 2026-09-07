@@ -565,7 +565,7 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
         </div>
       </div>
 
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">
+      <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
         {/* Module Toolbar */}
         <ModuleToolbar
           search={searchQuery}

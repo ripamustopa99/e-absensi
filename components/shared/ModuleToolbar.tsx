@@ -28,8 +28,8 @@ export default function ModuleToolbar({
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   return (
-    <div className="bg-[var(--surface)] border-b border-[var(--border)]">
-      <div className="p-4 bg-[#F6F8F7] dark:bg-[var(--surface-subtle)] flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+    <div className="sm:bg-[var(--surface)] sm:border-b sm:border-[var(--border)] bg-transparent border-0">
+      <div className="py-3 px-0 sm:p-4 sm:bg-[#F6F8F7] sm:dark:bg-[var(--surface-subtle)] bg-transparent dark:bg-transparent flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         {/* Search & Mobile Filter Trigger */}
         <div className="flex items-center gap-3 w-full xl:w-auto">
           <div className="relative flex-1 xl:max-w-xs">

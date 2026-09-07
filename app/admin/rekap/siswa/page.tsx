@@ -652,8 +652,8 @@ export default function AdminRekapSiswaPage() {
           </div>
 
           {/* Data Table Card */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-subtle)]/50 flex items-center justify-between">
+          <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
+            <div className="px-0 sm:px-6 py-4 sm:border-b sm:border-[var(--border)] sm:bg-[var(--surface-subtle)]/50 bg-transparent border-b-0 flex items-center justify-between">
               <h2 className="text-[14px] font-bold text-[var(--text-primary)]">
                 Daftar Siswa ({studentList.length}) — Klik baris untuk melihat detail & edit
               </h2>

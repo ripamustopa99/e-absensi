@@ -609,8 +609,8 @@ export default function GuruRekapPage() {
               </div>
 
               {/* Reusable Data Table & Pagination in clean card */}
-              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-[var(--border)] bg-[var(--surface-subtle)]">
+              <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
+                <div className="px-0 sm:px-5 py-4 sm:border-b sm:border-[var(--border)] sm:bg-[var(--surface-subtle)] bg-transparent border-b-0">
                   <h2 className="text-[14px] font-bold text-[var(--text-primary)]">
                     Detail Kehadiran Siswa
                   </h2>
