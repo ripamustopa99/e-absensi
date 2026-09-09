@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   CalendarDays,
   CheckCircle2, Clock, AlertTriangle, Info,
-  Loader2, Download, BookOpen, Users, X
+  Loader2, Download, BookOpen, Users, X, TrendingUp
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
@@ -274,12 +274,21 @@ export default function KehadiranGuruPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
-      {/* ─── Header with Standalone Export Button on Top Right for Desktop ─── */}
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+      {/* ─── Header ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[22px] font-bold text-[var(--text-primary)] leading-tight tracking-tight">REKAP KEHADIRAN SAYA</h1>
-          <p className="text-[14px] font-medium text-[var(--text-secondary)] mt-0.5">Lihat riwayat dan statistik kehadiran mengajar Anda</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-primary/10 rounded-[var(--radius-md)]">
+              <TrendingUp className="text-primary" size={24} />
+            </div>
+            <h1 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
+              Rekap Kehadiran Saya
+            </h1>
+          </div>
+          <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
+            Lihat riwayat dan statistik kehadiran mengajar Anda.
+          </p>
         </div>
         <button
           type="button"

@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import DataTable from "@/components/shared/DataTable";
 import Pagination from "@/components/shared/Pagination";
+import MobileFilterDrawer from "@/components/shared/MobileFilterDrawer";
 import {
   Search,
   BookOpen,
@@ -67,6 +68,7 @@ export default function RiwayatSiswaPage() {
   const [tahunAjaranList, setTahunAjaranList] = useState<TahunAjaran[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>(""); // format: `${tahunAjaranId}_${semester}`
   const [search, setSearch] = useState("");
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const semesterOptions = useMemo(() => {
     const options: {
@@ -183,39 +185,21 @@ export default function RiwayatSiswaPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-10">
+    <div className="max-w-5xl mx-auto space-y-6 pb-10">
       {/* Header */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-end justify-between gap-6 relative overflow-hidden">
-        {/* Background Accent */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="w-14 h-14 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400">
-            <UserCheck size={28} />
-          </div>
-          <div>
-            <h1 className="text-[22px] font-bold text-[var(--text-primary)] leading-tight tracking-tight">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-primary/10 rounded-[var(--radius-md)]">
+              <UserCheck className="text-primary" size={24} />
+            </div>
+            <h1 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
               Riwayat Absensi Siswa
             </h1>
-            <p className="text-[14px] font-medium text-[var(--text-secondary)] mt-0.5">
-              Lihat dan edit kembali data kehadiran siswa yang telah Anda
-              ajarkan.
-            </p>
           </div>
-        </div>
-
-        <div className="flex flex-row items-center gap-3 relative z-10 w-full sm:w-auto">
-          <select
-            value={selectedOption}
-            onChange={(e) => setSelectedOption(e.target.value)}
-            className="flex-1 min-w-[220px] px-4 py-2.5 bg-white dark:bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl text-[13px] font-bold text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm"
-          >
-            {semesterOptions.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.label} {opt.isAktif ? "(Aktif)" : ""}
-              </option>
-            ))}
-          </select>
+          <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
+            Lihat dan edit kembali data kehadiran siswa yang telah Anda ajarkan.
+          </p>
         </div>
       </div>
 
@@ -235,6 +219,49 @@ export default function RiwayatSiswaPage() {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
             />
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            {/* Desktop Select */}
+            <div className="hidden md:block">
+              <select
+                value={selectedOption}
+                onChange={(e) => setSelectedOption(e.target.value)}
+                className="w-full md:w-auto min-w-[200px] px-3 py-2 bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-bold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-sm"
+              >
+                {semesterOptions.map((opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.label} {opt.isAktif ? "(Aktif)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Mobile Filter Drawer */}
+            <div className="md:hidden w-full">
+              <MobileFilterDrawer
+                isOpen={isMobileFilterOpen}
+                onOpen={() => setIsMobileFilterOpen(true)}
+                onClose={() => setIsMobileFilterOpen(false)}
+                title="Filter Riwayat"
+                className="w-full justify-center py-2.5"
+              >
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tahun Ajaran & Semester</label>
+                  <select
+                    value={selectedOption}
+                    onChange={(e) => setSelectedOption(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-bold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-sm"
+                  >
+                    {semesterOptions.map((opt) => (
+                      <option key={opt.id} value={opt.id}>
+                        {opt.label} {opt.isAktif ? "(Aktif)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </MobileFilterDrawer>
+            </div>
           </div>
         </div>
 

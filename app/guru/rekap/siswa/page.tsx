@@ -180,10 +180,12 @@ export default function GuruRekapPage() {
         setTotalPages(res.data.data.totalPages ?? 1);
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
-        toast.error(
-          error.response?.data?.message ??
-            "Gagal memuat data rekap absensi. Pastikan Anda memiliki hak akses ke tingkat ini.",
-        );
+        if (error.response?.status !== 403) {
+          toast.error(
+            error.response?.data?.message ??
+              "Gagal memuat data rekap absensi. Pastikan Anda memiliki hak akses ke tingkat ini.",
+          );
+        }
       } finally {
         setLoading(false);
       }
@@ -478,7 +480,7 @@ export default function GuruRekapPage() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
       {/* Header with Export Button on Top Right */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -514,19 +516,19 @@ export default function GuruRekapPage() {
           </p>
         </div>
       ) : tingkatList.length === 0 ? (
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-12 text-center shadow-sm">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-16 text-center shadow-sm">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-50 dark:bg-amber-950/20 rounded-full mb-4">
              <Filter size={24} className="text-amber-500" />
           </div>
-          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">Akses Dibatasi</h3>
-          <p className="text-[14px] text-[var(--text-secondary)] max-w-md mx-auto">
-            Halaman ini hanya dapat diakses oleh guru yang ditugaskan sebagai wali kelas.
+          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">Akses Khusus Wali Kelas</h3>
+          <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed max-w-md mx-auto">
+            Halaman Rekap Kehadiran Siswa hanya dapat diakses oleh guru yang ditugaskan sebagai wali kelas. Saat ini Anda tidak terdaftar sebagai wali kelas di tingkat manapun.
           </p>
         </div>
       ) : (
         <div className="space-y-6">
           {/* ModuleToolbar as clean standalone card */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">
+          <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
             <ModuleToolbar
               search={searchQuery}
               onSearchChange={setSearchQuery}

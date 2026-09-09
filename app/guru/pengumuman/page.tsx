@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import {
   Megaphone,
   Loader2,
@@ -67,43 +68,30 @@ export default function GuruPengumumanPage() {
   }, [pengumumanList, filterJenjang]);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
       {/* Header */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] p-6 md:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-4 w-full">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0"
-            style={{ backgroundColor: "var(--primary)" }}
-          >
-            <Megaphone size={20} />
+      <AdminHeader
+        variant="icon"
+        icon={Megaphone}
+        title="Pengumuman & Informasi Sekolah"
+        description="Informasi penting, agenda, dan pengumuman resmi dari pihak manajemen sekolah."
+        actions={
+          <div className="flex items-center gap-2 bg-[var(--surface-subtle)] p-1.5 rounded-xl border border-[var(--border)] w-full sm:w-auto">
+            <div className="pl-3 text-[var(--text-tertiary)]">
+              <Filter size={16} />
+            </div>
+            <select
+              value={filterJenjang}
+              onChange={(e) => setFilterJenjang(e.target.value)}
+              className="bg-transparent px-2 py-1.5 pr-8 text-[13px] font-bold text-[var(--text-primary)] focus:outline-none cursor-pointer w-full"
+            >
+              <option value="">Semua Jenjang</option>
+              <option value="MTS">MTS</option>
+              <option value="MA">MA</option>
+            </select>
           </div>
-          <div className="flex-1">
-            <h1 className="text-xl font-extrabold text-[var(--text-primary)]">
-              Pengumuman & Informasi Sekolah
-            </h1>
-            <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
-              Informasi penting, agenda, dan pengumuman resmi dari pihak
-              manajemen sekolah.
-            </p>
-          </div>
-        </div>
-
-        {/* Filter Bar */}
-        <div className="flex items-center gap-2 bg-[var(--surface-subtle)] p-1.5 rounded-xl border border-[var(--border)] w-full md:w-auto">
-          <div className="pl-3 text-[var(--text-tertiary)]">
-            <Filter size={16} />
-          </div>
-          <select
-            value={filterJenjang}
-            onChange={(e) => setFilterJenjang(e.target.value)}
-            className="bg-transparent px-2 py-1.5 pr-8 text-[13px] font-bold text-[var(--text-primary)] focus:outline-none cursor-pointer w-full"
-          >
-            <option value="">Semua Jenjang</option>
-            <option value="MTS">MTS</option>
-            <option value="MA">MA</option>
-          </select>
-        </div>
-      </div>
+        }
+      />
 
       {loading ? (
         <div className="flex justify-center py-20">

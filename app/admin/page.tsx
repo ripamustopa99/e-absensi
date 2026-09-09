@@ -148,6 +148,7 @@ export default function AdminDashboardPage() {
           const list = guruRekapRes.data.data.rekapHarian
             .slice(0, 5)
             .map((item: any) => ({
+              id: item.id,
               name: item.guru?.nama || "Guru",
               role: item.guru?.jabatan || "Pengajar",
               time: item.waktuAbsen
@@ -210,7 +211,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-16">
       {/* ─── Header & Top Actions (Bahasa Indonesia) ─── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3">
         <div>
           <h1 className="text-xl font-extrabold text-[var(--text-primary)]">
             Ringkasan & Kendali Sekolah
@@ -220,10 +221,11 @@ export default function AdminDashboardPage() {
             sekolah.
           </p>
         </div>
-        <div
-          className="flex items-center gap-3 relative border"
-          ref={dropdownRef}
-        >
+        <div className="flex justify-end">
+          <div
+            className="flex items-center gap-3 relative shrink-0"
+            ref={dropdownRef}
+          >
           {/* Customize Widget Dropdown Toggle */}
           <button
             onClick={() => setIsWidgetDropdownOpen(!isWidgetDropdownOpen)}
@@ -270,6 +272,7 @@ export default function AdminDashboardPage() {
               ))}
             </div>
           )}
+        </div>
         </div>
       </div>
 
@@ -429,12 +432,12 @@ export default function AdminDashboardPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredAttendance.map((row) => {
+                    filteredAttendance.map((row, index) => {
                       const isOnTime = row.status === "Tepat Waktu";
                       const isLate = row.status === "Terlambat";
                       return (
                         <tr
-                          key={row.name}
+                          key={row.id || `${row.name}-${index}`}
                           className="hover:bg-[var(--surface-subtle)]/50 transition-colors"
                         >
                           <td className="py-3.5 pr-4">
