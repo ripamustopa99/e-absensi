@@ -207,44 +207,28 @@ export default function RiwayatSiswaPage() {
       <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
         {/* Toolbar */}
         <div className="py-3 px-0 sm:p-4 sm:border-b sm:border-[var(--border)] sm:bg-[#F6F8F7] sm:dark:bg-[var(--surface-subtle)] bg-transparent dark:bg-transparent flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="relative w-full md:max-w-sm">
-            <Search
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
-            />
-            <input
-              type="text"
-              placeholder="Cari Mata Pelajaran atau Kelas..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
-            />
-          </div>
-
-          <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
-            {/* Desktop Select */}
-            <div className="hidden md:block">
-              <select
-                value={selectedOption}
-                onChange={(e) => setSelectedOption(e.target.value)}
-                className="w-full md:w-auto min-w-[200px] px-3 py-2 bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-bold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-sm"
-              >
-                {semesterOptions.map((opt) => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.label} {opt.isAktif ? "(Aktif)" : ""}
-                  </option>
-                ))}
-              </select>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative flex-1 md:max-w-sm">
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
+              />
+              <input
+                type="text"
+                placeholder="Cari Mata Pelajaran atau Kelas..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
+              />
             </div>
 
             {/* Mobile Filter Drawer */}
-            <div className="md:hidden w-full">
+            <div className="md:hidden shrink-0">
               <MobileFilterDrawer
                 isOpen={isMobileFilterOpen}
                 onOpen={() => setIsMobileFilterOpen(true)}
                 onClose={() => setIsMobileFilterOpen(false)}
                 title="Filter Riwayat"
-                className="w-full justify-center py-2.5"
               >
                 <div className="space-y-3">
                   <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tahun Ajaran & Semester</label>
@@ -262,6 +246,20 @@ export default function RiwayatSiswaPage() {
                 </div>
               </MobileFilterDrawer>
             </div>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2.5 w-auto justify-end">
+            <select
+              value={selectedOption}
+              onChange={(e) => setSelectedOption(e.target.value)}
+              className="min-w-[200px] px-3 py-2 bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-bold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-sm"
+            >
+              {semesterOptions.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.label} {opt.isAktif ? "(Aktif)" : ""}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
