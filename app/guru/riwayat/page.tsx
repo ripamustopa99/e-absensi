@@ -229,6 +229,7 @@ export default function RiwayatSiswaPage() {
                 onOpen={() => setIsMobileFilterOpen(true)}
                 onClose={() => setIsMobileFilterOpen(false)}
                 title="Filter Riwayat"
+                className="py-2.5"
               >
                 <div className="space-y-3">
                   <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tahun Ajaran & Semester</label>
