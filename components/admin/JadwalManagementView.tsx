@@ -114,13 +114,13 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
       if (filterHari !== "ALL") params.set("hari", filterHari);
 
       const [resJadwal, resOptions] = await Promise.all([
-        api.get<{ success: true; data: { jadwal: JadwalAdmin[]; total: number; totalPages: number } }>(`/jadwal/admin?${params.toString()}`),
+        api.get<{ success: true; data: JadwalAdmin[]; total: number; totalPages: number }>(`/jadwal/admin?${params.toString()}`),
         options ? Promise.resolve(null) : api.get<{ success: true; data: FormOptions }>("/jadwal/admin/options")
       ]);
 
-      setJadwalList(resJadwal.data.data.jadwal);
-      setTotal(resJadwal.data.data.total);
-      setTotalPages(resJadwal.data.data.totalPages);
+      setJadwalList(resJadwal.data.data);
+      setTotal(resJadwal.data.total);
+      setTotalPages(resJadwal.data.totalPages);
 
       if (resOptions) {
         setOptions(resOptions.data.data);

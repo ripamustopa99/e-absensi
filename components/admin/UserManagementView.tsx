@@ -20,6 +20,8 @@ import Modal from "@/components/shared/Modal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
+import { AdminHeader } from "@/components/admin/AdminHeader";
+import { Users } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type { AxiosError } from "axios";
@@ -336,24 +338,21 @@ export function UserManagementView() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-[var(--text-primary)]">
-            Manajemen Guru & Wali Kelas
-          </h1>
-          <p className="text-[13px] text-[var(--text-secondary)] mt-1">
-            Kelola data akun pengajar, hak akses, dan penugasan wali kelas MTs &
-            MA.
-          </p>
-        </div>
-        <button
-          onClick={openAddModal}
-          className="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-primary-hover transition-all shadow-sm self-start sm:self-auto"
-        >
-          <Plus size={16} />
-          Tambah Guru
-        </button>
-      </div>
+      <AdminHeader
+        variant="icon"
+        icon={Users}
+        title="Manajemen Guru & Wali Kelas"
+        description="Kelola data akun pengajar, hak akses, dan penugasan wali kelas MTs & MA."
+        actions={
+          <button
+            onClick={openAddModal}
+            className="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-primary-hover transition-all shadow-sm cursor-pointer"
+          >
+            <Plus size={16} />
+            Tambah Guru
+          </button>
+        }
+      />
 
       <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
         {/* Module Toolbar */}

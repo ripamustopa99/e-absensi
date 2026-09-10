@@ -65,18 +65,26 @@ export async function GET(
     let totalHadir = 0;
     let totalTidakHadir = 0;
 
+    const getLocalDateStr = (d: Date | string) => {
+      const dateObj = typeof d === 'string' ? new Date(d) : d;
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
     const curr = new Date(startDate);
     while (curr <= endDate) {
       const jsDay = curr.getDay();
       const dbDay = jsDay === 0 ? 7 : jsDay;
-      const dateStr = curr.toISOString().split('T')[0];
+      const dateStr = getLocalDateStr(curr);
 
       const daySchedules = schedules.filter((s: any) => s.hari === dbDay);
       for (const sched of daySchedules as any[]) {
         totalExpected++;
         const foundAbs = absensiRecords.find((a: any) => 
           a.jadwalId === sched.jadwalId && 
-          new Date(a.tanggal).toISOString().split('T')[0] === dateStr
+          getLocalDateStr(a.tanggal) === dateStr
         );
 
         const isHadir = foundAbs && (foundAbs.status === 'HADIR' || foundAbs.status === 'TELAT');
@@ -98,7 +106,7 @@ export async function GET(
           mapel: sched.mapel,
           kelas: sched.kelas,
           jenjang: sched.jenjang,
-          status: isHadir ? "HADIR" : "TIDAK_HADIR",
+          status: isHadir ? "HADIR" : "ALPA",
           waktuAbsen: foundAbs?.waktuAbsen || null,
         });
       }

@@ -30,9 +30,7 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [imageError, setImageError] = useState(false);
-  const [currentMode, setCurrentMode] = useState("light");
-  const [defaultLightVariant, setDefaultLightVariant] = useState("light");
-  const [defaultDarkVariant, setDefaultDarkVariant] = useState("dark");
+  const [currentMode, setCurrentMode] = useState("light-lighter");
   void _theme; void _systemAlerts; void _setSystemAlerts;
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -52,26 +50,16 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
 
   useEffect(() => {
     setMounted(true);
-    const savedMode = localStorage.getItem("app_brightness_mode") || "light";
+    const savedMode = localStorage.getItem("app_brightness_mode") || "light-lighter";
     setCurrentMode(savedMode);
     fetchProfileAndUnread();
-
-    const fetchThemeConfig = () => {
-      api.get("/public/setting/config").then((res: any) => {
-        if (res.data) {
-          if (res.data.defaultLightVariant) setDefaultLightVariant(res.data.defaultLightVariant);
-          if (res.data.defaultDarkVariant) setDefaultDarkVariant(res.data.defaultDarkVariant);
-        }
-      }).catch(() => {});
-    };
-
-    fetchThemeConfig();
 
     const handleProfileUpdate = () => {
       fetchProfileAndUnread();
     };
     const handleThemeUpdate = () => {
-      fetchThemeConfig();
+      const mode = localStorage.getItem("app_brightness_mode") || "light-lighter";
+      setCurrentMode(mode);
     };
     window.addEventListener("profile-updated", handleProfileUpdate);
     window.addEventListener("theme-updated", handleThemeUpdate);
@@ -99,14 +87,15 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
   }, []);
 
   const toggleTheme = () => {
-    const isCurrentlyDark = currentMode === "dark" || currentMode === "dark-darker";
-    const nextMode = isCurrentlyDark ? defaultLightVariant : defaultDarkVariant;
+    const isCurrentlyDark = currentMode === "dark-darker";
+    const nextMode = isCurrentlyDark ? "light-lighter" : "dark-darker";
     setCurrentMode(nextMode);
     document.documentElement.classList.remove("light", "light-lighter", "dark", "dark-darker");
     document.documentElement.classList.add(nextMode);
     localStorage.setItem("app_brightness_mode", nextMode);
     document.cookie = `app_brightness_mode=${nextMode}; path=/; max-age=31536000`;
     setTheme(isCurrentlyDark ? "light" : "dark");
+    window.dispatchEvent(new Event("theme-updated"));
   };
 
   const pathSegments = pathname.split("/").filter(Boolean);
@@ -189,7 +178,7 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
           aria-label="Switch Theme"
           title="Ubah Tema Terang/Gelap"
         >
-          {mounted && (currentMode === "dark" || currentMode === "dark-darker") ? <Sun size={15} /> : <Moon size={15} />}
+          {mounted && currentMode === "dark-darker" ? <Sun size={15} /> : <Moon size={15} />}
         </button>
 
         {/* Notifications Dropdown */}

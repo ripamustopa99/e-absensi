@@ -18,6 +18,7 @@ import Modal from "@/components/shared/Modal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type { AxiosError } from "axios";
@@ -355,30 +356,29 @@ export function MapelManagementView({ jenjang }: MapelManagementViewProps) {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-[var(--text-primary)]">
-            Mata Pelajaran {jenjang === "MA" ? "Madrasah Aliyah" : "Madrasah Tsanawiyah"} ({jenjang})
-          </h1>
-          <p className="text-[13px] text-[var(--text-secondary)] mt-1">
-            Kelola kurikulum dan tingkat mata pelajaran · <span className="font-semibold">{total}</span> mapel terdaftar
-          </p>
-        </div>
-        <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
-          <button
-            onClick={openImportModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] transition-all shadow-sm flex-1 sm:w-auto"
-          >
-            <Copy size={16} /> <span className="truncate">Ambil Mapel</span>
-          </button>
-          <button
-            onClick={openCreateModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-primary-hover transition-all shadow-sm flex-1 sm:w-auto"
-          >
-            <Plus size={16} /> <span className="truncate">Tambah Mapel {jenjang}</span>
-          </button>
-        </div>
-      </div>
+      <AdminHeader
+        variant="jenjang"
+        jenjang={jenjang}
+        moduleLabel="Manajemen Mata Pelajaran"
+        title={`Mata Pelajaran ${jenjang}`}
+        description={`Kelola kurikulum dan tingkat mata pelajaran · ${total} mapel terdaftar`}
+        actions={
+          <>
+            <button
+              onClick={openImportModal}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] transition-all shadow-sm flex-1 sm:w-auto cursor-pointer"
+            >
+              <Copy size={16} /> <span className="truncate">Ambil Mapel</span>
+            </button>
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-primary-hover transition-all shadow-sm flex-1 sm:w-auto cursor-pointer"
+            >
+              <Plus size={16} /> <span className="truncate">Tambah Mapel {jenjang}</span>
+            </button>
+          </>
+        }
+      />
 
       <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
         {/* Module Toolbar */}

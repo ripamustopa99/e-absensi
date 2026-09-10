@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import type { AxiosError } from "axios";
 
 type TahunAjaranData = {
@@ -226,33 +227,22 @@ export default function AdminKalenderPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
+      <AdminHeader
+        variant="icon"
+        icon={CalendarRange}
+        title="Kalender Akademik"
+        description="Kelola agenda dan jadwal kegiatan sekolah tahunan."
+        actions={
+          <button
+            onClick={openCreateModal}
+            className="inline-flex justify-center items-center gap-2 px-4 py-2.5 text-white text-[13px] font-bold rounded-[var(--radius-md)] transition-all shadow-sm cursor-pointer"
             style={{ backgroundColor: "var(--primary)" }}
           >
-            <CalendarRange size={20} />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-[var(--text-primary)]">
-              Kalender Akademik
-            </h1>
-            <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
-              Kelola agenda dan jadwal kegiatan sekolah tahunan.
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex justify-center items-center gap-2 px-4 py-2.5 text-white text-[13px] font-bold rounded-[var(--radius-md)] transition-all shadow-sm cursor-pointer"
-          style={{ backgroundColor: "var(--primary)" }}
-        >
-          <Plus size={16} />
-          Tambah Kegiatan
-        </button>
-      </div>
+            <Plus size={16} />
+            Tambah Kegiatan
+          </button>
+        }
+      />
 
       {/* Main Card */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">

@@ -29,6 +29,7 @@ import Modal from "@/components/shared/Modal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 
 type KategoriKelas = "MA" | "MTS";
 
@@ -527,43 +528,33 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-16">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 bg-primary/10 text-primary rounded-md text-[11px] font-bold uppercase tracking-wider">
-              Jenjang {jenjang}
-            </span>
-            <span className="text-[12px] text-[var(--text-tertiary)]">
-              | Manajemen Siswa
-            </span>
-          </div>
-          <h1 className="text-xl font-bold text-[var(--text-primary)] mt-1">
-            Data Siswa {jenjang}
-          </h1>
-          <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
-            Kelola data siswa, penempatan kelas, dan transisi kenaikan kelas /
-            kelulusan.
-          </p>
-        </div>
-        <div className="flex items-center gap-2.5 flex-row w-full sm:w-auto">
-          {jenjang === "MA" && (
+      <AdminHeader
+        variant="jenjang"
+        jenjang={jenjang}
+        moduleLabel="Manajemen Siswa"
+        title={`Data Siswa ${jenjang}`}
+        description="Kelola data siswa, penempatan kelas, dan transisi kenaikan kelas / kelulusan."
+        actions={
+          <>
+            {jenjang === "MA" && (
+              <button
+                onClick={openImportMtsModal}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-blue-700 transition-all shadow-sm flex-1 sm:w-auto cursor-pointer"
+              >
+                <Award size={16} />
+                <span className="truncate">Ambil Data dari MTs</span>
+              </button>
+            )}
             <button
-              onClick={openImportMtsModal}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-blue-700 transition-all shadow-sm w-full sm:w-auto"
+              onClick={openCreateModal}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-primary-hover transition-all shadow-sm flex-1 sm:w-auto cursor-pointer"
             >
-              <Award size={16} />
-              <span className="truncate">Ambil Data dari MTs</span>
+              <Plus size={16} />
+              <span className="truncate">Tambah Siswa {jenjang}</span>
             </button>
-          )}
-          <button
-            onClick={openCreateModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-[13px] font-bold rounded-[var(--radius-md)] hover:bg-primary-hover transition-all shadow-sm w-full sm:w-auto"
-          >
-            <Plus size={16} />
-            <span className="truncate">Tambah Siswa {jenjang}</span>
-          </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
         {/* Module Toolbar */}
@@ -820,7 +811,7 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
 
         {/* Pagination Footer */}
         {!isLoading && totalData > 0 && (
-          <div className="px-5 py-3 border-t border-[var(--border)] bg-[var(--surface-subtle)] flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-[var(--text-secondary)] font-medium">
+          <div className="px-5 py-3 border-t border-[var(--border)] sm:bg-[var(--surface-subtle)] bg-transparent flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-[var(--text-secondary)] font-medium">
             <span>
               Menampilkan data {(page - 1) * limit + 1} -{" "}
               {Math.min(page * limit, totalData)} dari {totalData} total siswa{" "}

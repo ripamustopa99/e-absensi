@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import { toast } from "sonner";
 import { Loader2, Settings, Database, LayoutTemplate, Palette, Sun, Moon, Sparkles, Pencil, X } from "lucide-react";
 
@@ -17,13 +18,11 @@ const PRESET_COLORS = [
 ];
 
 const LIGHT_VARIANTS = [
-  { id: "light", name: "Terang (Standard)", desc: "Tampilan terang bersih dan seimbang", icon: Sun },
-  { id: "light-lighter", name: "Lebih Terang (Light+)", desc: "Background lebih cerah dengan kontras tinggi", icon: Sparkles },
+  { id: "light-lighter", name: "Terang", desc: "Tampilan terang", icon: Sun },
 ];
 
 const DARK_VARIANTS = [
-  { id: "dark", name: "Gelap (Standard)", desc: "Nyaman di mata untuk ruangan minim cahaya", icon: Moon },
-  { id: "dark-darker", name: "Lebih Gelap (OLED Black)", desc: "Warna hitam pekat untuk efisiensi daya maksimal", icon: Moon },
+  { id: "dark-darker", name: "Gelap", desc: "Tampilan gelap", icon: Moon },
 ];
 
 export default function AdminSettingsPage() {
@@ -58,21 +57,32 @@ export default function AdminSettingsPage() {
   // Theme states
   const [themeConfig, setThemeConfig] = useState({
     primaryColor: "#0FBE85",
-    defaultLightVariant: "light",
-    defaultDarkVariant: "dark",
   });
+  const [currentBrightness, setCurrentBrightness] = useState("light-lighter");
 
   useEffect(() => {
     const currentCssPrimary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
     const activeColor = currentCssPrimary.startsWith("#") ? currentCssPrimary : "#0FBE85";
+    const savedBrightness = localStorage.getItem("app_brightness_mode") || "light-lighter";
 
     setThemeConfig((prev) => ({
       ...prev,
       primaryColor: activeColor,
     }));
+    setCurrentBrightness(savedBrightness);
+
+    const handleThemeUpdate = () => {
+      const mode = localStorage.getItem("app_brightness_mode") || "light-lighter";
+      setCurrentBrightness(mode);
+    };
+    window.addEventListener("theme-updated", handleThemeUpdate);
 
     fetchSettings();
     fetchTahunAjaran();
+
+    return () => {
+      window.removeEventListener("theme-updated", handleThemeUpdate);
+    };
   }, []);
 
   const fetchSettings = async () => {
@@ -95,15 +105,11 @@ export default function AdminSettingsPage() {
         const val = typeof resTheme.data.value === "string" ? JSON.parse(resTheme.data.value) : resTheme.data.value;
         const currentCssPrimary = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
         const activeColor = val.primaryColor || (currentCssPrimary.startsWith("#") ? currentCssPrimary : "#0FBE85");
-        const lightVar = val.defaultLightVariant || "light";
-        const darkVar = val.defaultDarkVariant || "dark";
 
         setThemeConfig({
           primaryColor: activeColor,
-          defaultLightVariant: lightVar,
-          defaultDarkVariant: darkVar,
         });
-        applyThemeLive(activeColor);
+        applyThemeLive(activeColor, currentBrightness);
       }
     } catch (err) {
       console.error(err);
@@ -157,18 +163,14 @@ export default function AdminSettingsPage() {
 
   const handleColorChange = (color: string) => {
     setThemeConfig((prev) => ({ ...prev, primaryColor: color }));
-    const currentMode = document.documentElement.classList.contains("dark") || document.documentElement.classList.contains("dark-darker") 
-      ? themeConfig.defaultDarkVariant 
-      : themeConfig.defaultLightVariant;
-    applyThemeLive(color, currentMode);
+    applyThemeLive(color, currentBrightness);
   };
 
-  const handleLightVariantChange = (variant: string) => {
-    setThemeConfig((prev) => ({ ...prev, defaultLightVariant: variant }));
-  };
-
-  const handleDarkVariantChange = (variant: string) => {
-    setThemeConfig((prev) => ({ ...prev, defaultDarkVariant: variant }));
+  const handleBrightnessChange = (variant: string) => {
+    setCurrentBrightness(variant);
+    localStorage.setItem("app_brightness_mode", variant);
+    applyThemeLive(themeConfig.primaryColor, variant);
+    window.dispatchEvent(new Event("theme-updated"));
   };
 
   const previewVariant = (variant: string, e: React.MouseEvent) => {
@@ -241,15 +243,12 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: "var(--primary)" }}>
-          <Settings size={20} />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-[var(--text-primary)]">Pengaturan Sistem</h1>
-          <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Kelola konfigurasi akademik, branding aplikasi, dan standar tema institusi.</p>
-        </div>
-      </div>
+      <AdminHeader
+        variant="icon"
+        icon={Settings}
+        title="Pengaturan Sistem"
+        description="Kelola konfigurasi akademik, branding aplikasi, dan standar tema institusi."
+      />
 
       <div className="flex gap-2 border-b border-[var(--border)] overflow-x-auto">
         <button
@@ -600,20 +599,20 @@ export default function AdminSettingsPage() {
                 </div>
               </div>
 
-              {/* Standar Varian Terang (Light Mode Nuansa) */}
+              {/* Standar Tema Tampilan (Terang & Gelap) */}
               <div className="pt-4 border-t border-[var(--border)]">
-                <h2 className="text-sm font-bold text-[var(--text-primary)] mb-1">Standar Varian Terang (Light Mode Nuansa)</h2>
-                <p className="text-[12px] text-[var(--text-secondary)] mb-3">
-                  Tentukan varian terang standar institusi yang digunakan saat pengguna memilih Light Mode via topbar. Varian terang dan gelap dapat dipilih secara bebas dan independen.
+                <h2 className="text-sm font-bold text-[var(--text-primary)] mb-1">Standar Tema Tampilan (Terang & Gelap)</h2>
+                <p className="text-[12px] text-[var(--text-secondary)] mb-4">
+                  Tentukan mode tampilan standar institusi (Terang dan Gelap) yang digunakan saat pengguna berganti tema via topbar.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {LIGHT_VARIANTS.map((m) => {
                     const Icon = m.icon;
-                    const isSelected = themeConfig.defaultLightVariant === m.id;
+                    const isSelected = currentBrightness === m.id;
                     return (
                       <div
                         key={m.id}
-                        onClick={() => handleLightVariantChange(m.id)}
+                        onClick={() => handleBrightnessChange(m.id)}
                         className={`p-4 rounded-xl border text-left transition-all space-y-2 cursor-pointer flex flex-col justify-between ${
                           isSelected ? "border-[var(--primary)] shadow-sm bg-[var(--surface-subtle)] ring-1 ring-[var(--primary)]" : "border-[var(--border)] hover:border-[var(--text-tertiary)]"
                         }`}
@@ -625,7 +624,7 @@ export default function AdminSettingsPage() {
                               <span>{m.name}</span>
                             </div>
                             {isSelected && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--primary)] text-white">Default Terpilih</span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--primary)] text-white">Aktif</span>
                             )}
                           </div>
                           <p className="text-[11px] text-[var(--text-secondary)]">{m.desc}</p>
@@ -642,23 +641,14 @@ export default function AdminSettingsPage() {
                       </div>
                     );
                   })}
-                </div>
-              </div>
 
-              {/* Standar Varian Gelap (Dark Mode Nuansa) */}
-              <div className="pt-4 border-t border-[var(--border)]">
-                <h2 className="text-sm font-bold text-[var(--text-primary)] mb-1">Standar Varian Gelap (Dark Mode Nuansa)</h2>
-                <p className="text-[12px] text-[var(--text-secondary)] mb-3">
-                  Tentukan varian gelap standar institusi yang digunakan saat pengguna memilih Dark Mode via topbar. Bebas dipasangkan dengan varian terang apa saja.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {DARK_VARIANTS.map((m) => {
                     const Icon = m.icon;
-                    const isSelected = themeConfig.defaultDarkVariant === m.id;
+                    const isSelected = currentBrightness === m.id;
                     return (
                       <div
                         key={m.id}
-                        onClick={() => handleDarkVariantChange(m.id)}
+                        onClick={() => handleBrightnessChange(m.id)}
                         className={`p-4 rounded-xl border text-left transition-all space-y-2 cursor-pointer flex flex-col justify-between ${
                           isSelected ? "border-[var(--primary)] shadow-sm bg-[var(--surface-subtle)] ring-1 ring-[var(--primary)]" : "border-[var(--border)] hover:border-[var(--text-tertiary)]"
                         }`}
@@ -670,7 +660,7 @@ export default function AdminSettingsPage() {
                               <span>{m.name}</span>
                             </div>
                             {isSelected && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--primary)] text-white">Default Terpilih</span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--primary)] text-white">Aktif</span>
                             )}
                           </div>
                           <p className="text-[11px] text-[var(--text-secondary)]">{m.desc}</p>

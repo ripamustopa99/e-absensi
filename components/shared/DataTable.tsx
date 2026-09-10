@@ -24,6 +24,8 @@ export default function DataTable<T>({
   emptyIcon = <Inbox size={36} className="mx-auto mb-3 opacity-50" />,
   minWidth = "min-w-[850px]",
 }: DataTableProps<T>) {
+  const safeData = data || [];
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-[var(--text-tertiary)]">
@@ -33,7 +35,7 @@ export default function DataTable<T>({
     );
   }
 
-  if (data.length === 0) {
+  if (safeData.length === 0) {
     return (
       <div className="text-center py-20 text-[var(--text-tertiary)]">
         {emptyIcon}
@@ -66,7 +68,7 @@ export default function DataTable<T>({
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border-subtle)]">
-            {data.map((item, index) => renderRow(item, index))}
+            {safeData.map((item, index) => renderRow(item, index))}
           </tbody>
         </table>
       </div>
@@ -74,7 +76,7 @@ export default function DataTable<T>({
       {/* Mobile Card / List View */}
       {renderMobileCard && (
         <div className="sm:hidden space-y-3">
-          {data.map((item, index) => renderMobileCard(item, index))}
+          {safeData.map((item, index) => renderMobileCard(item, index))}
         </div>
       )}
     </>

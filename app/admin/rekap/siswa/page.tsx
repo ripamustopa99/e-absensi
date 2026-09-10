@@ -120,12 +120,15 @@ export default function AdminRekapSiswaPage() {
   const [totalPages, setTotalPages] = useState(1);
 
   // Modal detail individual siswa
-  const [selectedStudent, setSelectedStudent] = useState<StudentAttendance | null>(null);
+  const [selectedStudent, setSelectedStudent] =
+    useState<StudentAttendance | null>(null);
   const [studentDetailLoading, setStudentDetailLoading] = useState(false);
-  const [studentDetailData, setStudentDetailData] = useState<StudentDetailData | null>(null);
+  const [studentDetailData, setStudentDetailData] =
+    useState<StudentDetailData | null>(null);
 
   // Edit attendance state
-  const [editingRecord, setEditingRecord] = useState<StudentDetailRecord | null>(null);
+  const [editingRecord, setEditingRecord] =
+    useState<StudentDetailRecord | null>(null);
   const [editStatus, setEditStatus] = useState<StatusAbsensiSiswa>("HADIR");
   const [editAlasan, setEditAlasan] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
@@ -156,7 +159,7 @@ export default function AdminRekapSiswaPage() {
       year: string,
       sem: string,
       search: string,
-      pageNum: number
+      pageNum: number,
     ) => {
       setLoading(true);
       try {
@@ -185,8 +188,7 @@ export default function AdminRekapSiswaPage() {
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         toast.error(
-          error.response?.data?.message ??
-          "Gagal memuat data rekap absensi.",
+          error.response?.data?.message ?? "Gagal memuat data rekap absensi.",
         );
       } finally {
         setLoading(false);
@@ -202,33 +204,67 @@ export default function AdminRekapSiswaPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (filterJenjang && filterTingkat && tahun) {
-        fetchData(filterJenjang, filterTingkat, bulan, tahun, semester, searchQuery, page);
+        fetchData(
+          filterJenjang,
+          filterTingkat,
+          bulan,
+          tahun,
+          semester,
+          searchQuery,
+          page,
+        );
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [filterJenjang, filterTingkat, bulan, tahun, semester, searchQuery, filterMode, page, fetchData]);
+  }, [
+    filterJenjang,
+    filterTingkat,
+    bulan,
+    tahun,
+    semester,
+    searchQuery,
+    filterMode,
+    page,
+    fetchData,
+  ]);
 
   // Reset page to 1 on filter change
   useEffect(() => {
     setPage(1);
-  }, [filterJenjang, filterTingkat, bulan, tahun, semester, searchQuery, filterMode]);
+  }, [
+    filterJenjang,
+    filterTingkat,
+    bulan,
+    tahun,
+    semester,
+    searchQuery,
+    filterMode,
+  ]);
 
-  const fetchStudentDetail = useCallback(async (student: StudentAttendance) => {
-    setSelectedStudent(student);
-    setStudentDetailLoading(true);
-    try {
-      const res = await api.get<{ success: boolean; data: StudentDetailData }>(
-        `/rekap/absensi-siswa/admin/student/${student.siswa.id}?bulan=${bulan}&tahun=${tahun}`
-      );
-      setStudentDetailData(res.data.data);
-    } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
-      toast.error(error.response?.data?.message ?? "Gagal memuat detail absensi siswa");
-    } finally {
-      setStudentDetailLoading(false);
-    }
-  }, [bulan, tahun]);
+  const fetchStudentDetail = useCallback(
+    async (student: StudentAttendance) => {
+      setSelectedStudent(student);
+      setStudentDetailLoading(true);
+      try {
+        const res = await api.get<{
+          success: boolean;
+          data: StudentDetailData;
+        }>(
+          `/rekap/absensi-siswa/admin/student/${student.siswa.id}?bulan=${bulan}&tahun=${tahun}`,
+        );
+        setStudentDetailData(res.data.data);
+      } catch (err) {
+        const error = err as AxiosError<{ message: string }>;
+        toast.error(
+          error.response?.data?.message ?? "Gagal memuat detail absensi siswa",
+        );
+      } finally {
+        setStudentDetailLoading(false);
+      }
+    },
+    [bulan, tahun],
+  );
 
   const handleSaveEdit = async () => {
     if (!editingRecord) return;
@@ -245,7 +281,15 @@ export default function AdminRekapSiswaPage() {
         fetchStudentDetail(selectedStudent);
       }
       if (filterJenjang && filterTingkat) {
-        fetchData(filterJenjang, filterTingkat, bulan, tahun, semester, searchQuery, page);
+        fetchData(
+          filterJenjang,
+          filterTingkat,
+          bulan,
+          tahun,
+          semester,
+          searchQuery,
+          page,
+        );
       }
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -260,7 +304,8 @@ export default function AdminRekapSiswaPage() {
     setFilterTingkat("X");
     setBulan(String(new Date().getMonth() + 1).padStart(2, "0"));
     if (tahunAjaranList.length > 0) {
-      const aktif = tahunAjaranList.find(t => t.isAktif) || tahunAjaranList[0];
+      const aktif =
+        tahunAjaranList.find((t) => t.isAktif) || tahunAjaranList[0];
       setTahun(String(new Date(aktif.tanggalMulaiGanjil).getFullYear()));
     }
     setSemester("1");
@@ -310,7 +355,7 @@ export default function AdminRekapSiswaPage() {
       const error = err as AxiosError<{ message: string }>;
       toast.error(
         error.response?.data?.message ??
-        "Gagal mengunduh laporan. Silakan coba lagi.",
+          "Gagal mengunduh laporan. Silakan coba lagi.",
       );
     } finally {
       setSearching(false);
@@ -393,16 +438,22 @@ export default function AdminRekapSiswaPage() {
         <button
           type="button"
           onClick={() => setFilterMode("bulan")}
-          className={`px-3 py-1.5 text-[12px] font-semibold rounded-[var(--radius-sm)] transition-all cursor-pointer ${filterMode === "bulan" ? "bg-primary text-white shadow-sm" : "text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]"
-            }`}
+          className={`px-3 py-1.5 text-[12px] font-semibold rounded-[var(--radius-sm)] transition-all cursor-pointer ${
+            filterMode === "bulan"
+              ? "bg-primary text-white shadow-sm"
+              : "text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]"
+          }`}
         >
           Per Bulan
         </button>
         <button
           type="button"
           onClick={() => setFilterMode("semester")}
-          className={`px-3 py-1.5 text-[12px] font-semibold rounded-[var(--radius-sm)] transition-all cursor-pointer ${filterMode === "semester" ? "bg-primary text-white shadow-sm" : "text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]"
-            }`}
+          className={`px-3 py-1.5 text-[12px] font-semibold rounded-[var(--radius-sm)] transition-all cursor-pointer ${
+            filterMode === "semester"
+              ? "bg-primary text-white shadow-sm"
+              : "text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]"
+          }`}
         >
           Per Semester
         </button>
@@ -415,7 +466,9 @@ export default function AdminRekapSiswaPage() {
           className="px-3.5 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-medium text-[var(--text-primary)] focus:outline-none focus:border-primary transition-colors cursor-pointer shadow-sm"
         >
           {monthOptions.map((m) => (
-            <option key={m.value} value={m.value}>{m.label}</option>
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
           ))}
         </select>
       ) : (
@@ -425,7 +478,9 @@ export default function AdminRekapSiswaPage() {
           className="px-3.5 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-medium text-[var(--text-primary)] focus:outline-none focus:border-primary transition-colors cursor-pointer shadow-sm"
         >
           {semesterOptions.map((s) => (
-            <option key={s.value} value={s.value}>{s.label}</option>
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
           ))}
         </select>
       )}
@@ -437,7 +492,11 @@ export default function AdminRekapSiswaPage() {
       >
         {tahunAjaranList.map((t) => {
           const y = new Date(t.tanggalMulaiGanjil).getFullYear();
-          return (<option key={t.id} value={String(y)}>{t.label}</option>);
+          return (
+            <option key={t.id} value={String(y)}>
+              {t.label}
+            </option>
+          );
         })}
       </select>
     </>
@@ -446,7 +505,9 @@ export default function AdminRekapSiswaPage() {
   const mobileFilters = (
     <div className="space-y-4 text-[13px]">
       <div className="space-y-1.5">
-        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Jenjang</label>
+        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+          Jenjang
+        </label>
         <select
           value={filterJenjang}
           onChange={(e) => {
@@ -462,7 +523,9 @@ export default function AdminRekapSiswaPage() {
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tingkat</label>
+        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+          Tingkat
+        </label>
         <select
           value={filterTingkat}
           onChange={(e) => setFilterTingkat(e.target.value)}
@@ -485,7 +548,9 @@ export default function AdminRekapSiswaPage() {
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Mode Filter</label>
+        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+          Mode Filter
+        </label>
         <div className="flex items-center gap-2 border border-[var(--border)] rounded-[var(--radius-md)] p-0.5 bg-[var(--surface)] shadow-sm">
           <button
             type="button"
@@ -506,26 +571,56 @@ export default function AdminRekapSiswaPage() {
 
       {filterMode === "bulan" ? (
         <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Bulan</label>
-          <select value={bulan} onChange={(e) => setBulan(e.target.value)} className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-primary outline-none shadow-sm cursor-pointer">
-            {monthOptions.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+          <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+            Bulan
+          </label>
+          <select
+            value={bulan}
+            onChange={(e) => setBulan(e.target.value)}
+            className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-primary outline-none shadow-sm cursor-pointer"
+          >
+            {monthOptions.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
           </select>
         </div>
       ) : (
         <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Semester</label>
-          <select value={semester} onChange={(e) => setSemester(e.target.value)} className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-primary outline-none shadow-sm cursor-pointer">
-            {semesterOptions.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+            Semester
+          </label>
+          <select
+            value={semester}
+            onChange={(e) => setSemester(e.target.value)}
+            className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-primary outline-none shadow-sm cursor-pointer"
+          >
+            {semesterOptions.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
           </select>
         </div>
       )}
 
       <div className="space-y-1.5">
-        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tahun</label>
-        <select value={tahun} onChange={(e) => setTahun(e.target.value)} className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-primary outline-none shadow-sm cursor-pointer">
+        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+          Tahun
+        </label>
+        <select
+          value={tahun}
+          onChange={(e) => setTahun(e.target.value)}
+          className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-primary outline-none shadow-sm cursor-pointer"
+        >
           {tahunAjaranList.map((t) => {
             const y = new Date(t.tanggalMulaiGanjil).getFullYear();
-            return (<option key={t.id} value={String(y)}>{t.label}</option>);
+            return (
+              <option key={t.id} value={String(y)}>
+                {t.label}
+              </option>
+            );
           })}
         </select>
       </div>
@@ -546,7 +641,8 @@ export default function AdminRekapSiswaPage() {
             </h1>
           </div>
           <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
-            Filter rekapitulasi absensi per kelas, bulan, tanggal, dan detail per orang siswa. Admin dapat mengedit data absensi.
+            Filter rekapitulasi absensi per kelas, bulan, tanggal, dan detail
+            per orang siswa. Admin dapat mengedit data absensi.
           </p>
         </div>
         <button
@@ -567,8 +663,8 @@ export default function AdminRekapSiswaPage() {
         </button>
       </div>
 
-      {/* Toolbar Card */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">
+      {/* Toolbar Card (Transparent on mobile, bordered on desktop) */}
+      <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
         <ModuleToolbar
           search={searchQuery}
           onSearchChange={setSearchQuery}
@@ -586,7 +682,8 @@ export default function AdminRekapSiswaPage() {
             Silakan pilih kelas terlebih dahulu
           </p>
           <p className="text-[13px] text-[var(--text-secondary)] mt-1">
-            Data rekapitulasi dan detail kehadiran siswa akan ditampilkan berdasarkan pilihan kelas.
+            Data rekapitulasi dan detail kehadiran siswa akan ditampilkan
+            berdasarkan pilihan kelas.
           </p>
         </div>
       ) : loading ? (
@@ -625,7 +722,8 @@ export default function AdminRekapSiswaPage() {
                         ? "totalIzin"
                         : "totalAlpa";
                 const count = stats[statKey] || 0;
-                const percentage = statsTotal > 0 ? Math.round((count / statsTotal) * 100) : 0;
+                const percentage =
+                  statsTotal > 0 ? Math.round((count / statsTotal) * 100) : 0;
 
                 return (
                   <div
@@ -643,7 +741,10 @@ export default function AdminRekapSiswaPage() {
                     <p
                       className={`text-2xl font-black tracking-tight ${statusMap[status].color}`}
                     >
-                      {count} <span className="text-[12px] font-medium text-[var(--text-tertiary)]">sesi</span>
+                      {count}{" "}
+                      <span className="text-[12px] font-medium text-[var(--text-tertiary)]">
+                        sesi
+                      </span>
                     </p>
                   </div>
                 );
@@ -655,142 +756,183 @@ export default function AdminRekapSiswaPage() {
           <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
             <div className="px-0 sm:px-6 py-4 sm:border-b sm:border-[var(--border)] sm:bg-[var(--surface-subtle)]/50 bg-transparent border-b-0 flex items-center justify-between">
               <h2 className="text-[14px] font-bold text-[var(--text-primary)]">
-                Daftar Siswa ({studentList.length}) — Klik baris untuk melihat detail & edit
+                Daftar Siswa ({studentList.length}) — Klik baris untuk melihat
+                detail & edit
               </h2>
             </div>
-              <DataTable
-                loading={false}
-                data={studentList}
-                headers={["Siswa", "Hadir", "Sakit", "Izin", "Alpa", "Persentase & Aksi"]}
-                minWidth="min-w-[750px]"
-                emptyMessage="Belum ada data siswa pada kelas dan periode ini."
-                emptyIcon={<Users size={36} className="mx-auto mb-3 opacity-50 text-[var(--text-tertiary)]" />}
-                renderRow={(student) => (
-                  <tr
-                    key={student.id}
-                    onClick={() => fetchStudentDetail(student)}
-                    className="hover:bg-[var(--surface-subtle)]/60 transition-colors cursor-pointer group"
-                  >
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-[14px]">
-                          {student.siswa.nama.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-bold text-[var(--text-primary)] group-hover:text-primary transition-colors">
-                            {student.siswa.nama}
-                          </p>
-                          <p className="text-[11px] text-[var(--text-tertiary)]">
-                            NISN: {student.siswa.nisn}
-                          </p>
-                        </div>
+            <DataTable
+              loading={false}
+              data={studentList}
+              headers={[
+                "Siswa",
+                "Hadir",
+                "Sakit",
+                "Izin",
+                "Alpa",
+                "Persentase & Aksi",
+              ]}
+              minWidth="min-w-[900px]"
+              emptyMessage="Belum ada data siswa pada kelas dan periode ini."
+              emptyIcon={
+                <Users
+                  size={36}
+                  className="mx-auto mb-3 opacity-50 text-[var(--text-tertiary)]"
+                />
+              }
+              renderRow={(student) => (
+                <tr
+                  key={student.id}
+                  onClick={() => fetchStudentDetail(student)}
+                  className="hover:bg-[var(--surface-subtle)]/60 transition-colors cursor-pointer group"
+                >
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-[14px]">
+                        {student.siswa.nama.charAt(0)}
                       </div>
-                    </td>
-                    <td className="text-center py-4 px-4">
-                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-primary/10 text-primary text-[12px] font-bold">
-                        {student.totalHadir}
-                      </span>
-                    </td>
-                    <td className="text-center py-4 px-4">
-                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 text-[12px] font-bold">
-                        {student.totalSakit}
-                      </span>
-                    </td>
-                    <td className="text-center py-4 px-4">
-                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 text-[12px] font-bold">
-                        {student.totalIzin}
-                      </span>
-                    </td>
-                    <td className="text-center py-4 px-4">
-                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-[12px] font-bold">
-                        {student.totalAlpa}
-                      </span>
-                    </td>
-                    <td className="text-right py-4 px-6">
-                      <div className="flex items-center justify-end gap-3">
-                        <div className="w-24 h-2 bg-[var(--surface-subtle)] rounded-full overflow-hidden border border-[var(--border-subtle)]">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${student.persentaseKehadiran >= 90
-                                ? "bg-primary"
-                                : student.persentaseKehadiran >= 75
-                                  ? "bg-amber-500"
-                                  : "bg-rose-500"
-                              }`}
-                            style={{ width: `${Math.min(100, Math.max(0, student.persentaseKehadiran))}%` }}
-                          />
-                        </div>
-                        <span className="text-[13px] font-black text-[var(--text-primary)] w-12 text-right">
-                          {Math.round(student.persentaseKehadiran)}%
-                        </span>
-                        <ChevronRight size={16} className="text-[var(--text-tertiary)] group-hover:text-primary transition-colors" />
+                      <div>
+                        <p className="text-[13px] font-bold text-[var(--text-primary)] group-hover:text-primary transition-colors whitespace-nowrap">
+                          {student.siswa.nama}
+                        </p>
+                        <p className="text-[11px] text-[var(--text-tertiary)]">
+                          NISN: {student.siswa.nisn}
+                        </p>
                       </div>
-                    </td>
-                  </tr>
-                )}
-                renderMobileCard={(student) => (
-                  <div
-                    key={student.id}
-                    onClick={() => fetchStudentDetail(student)}
-                    className="bg-[var(--surface)] border border-[var(--border)] p-4 rounded-xl shadow-sm space-y-3 cursor-pointer hover:border-primary/40 transition-colors"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-[14px]">
-                          {student.siswa.nama.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-[14px] font-bold text-[var(--text-primary)]">
-                            {student.siswa.nama}
-                          </p>
-                          <p className="text-[11px] text-[var(--text-tertiary)]">
-                            NISN: {student.siswa.nisn}
-                          </p>
-                        </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-primary/10 text-primary text-[12px] font-bold">
+                      {student.totalHadir}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 text-[12px] font-bold">
+                      {student.totalSakit}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 text-[12px] font-bold">
+                      {student.totalIzin}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-[12px] font-bold">
+                      {student.totalAlpa}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex items-center justify-end gap-3">
+                      <div className="w-24 h-2 bg-[var(--surface-subtle)] rounded-full overflow-hidden border border-[var(--border-subtle)]">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            student.persentaseKehadiran >= 90
+                              ? "bg-primary"
+                              : student.persentaseKehadiran >= 75
+                                ? "bg-amber-500"
+                                : "bg-rose-500"
+                          }`}
+                          style={{
+                            width: `${Math.min(100, Math.max(0, student.persentaseKehadiran))}%`,
+                          }}
+                        />
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Edit3 size={14} className="text-[var(--text-tertiary)]" />
-                        <span className={`text-[12px] font-bold ${student.persentaseKehadiran >= 90
+                      <span className="text-[13px] font-black text-[var(--text-primary)] w-12 text-right">
+                        {Math.round(student.persentaseKehadiran)}%
+                      </span>
+                      <ChevronRight
+                        size={16}
+                        className="text-[var(--text-tertiary)] group-hover:text-primary transition-colors"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              )}
+              renderMobileCard={(student) => (
+                <div
+                  key={student.id}
+                  onClick={() => fetchStudentDetail(student)}
+                  className="bg-[var(--surface)] border border-[var(--border)] p-4 rounded-xl shadow-sm space-y-3 cursor-pointer hover:border-primary/40 transition-colors"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-[14px]">
+                        {student.siswa.nama.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="text-[14px] font-bold text-[var(--text-primary)]">
+                          {student.siswa.nama}
+                        </p>
+                        <p className="text-[11px] text-[var(--text-tertiary)]">
+                          NISN: {student.siswa.nisn}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Edit3
+                        size={14}
+                        className="text-[var(--text-tertiary)]"
+                      />
+                      <span
+                        className={`text-[12px] font-bold ${
+                          student.persentaseKehadiran >= 90
                             ? "text-primary"
                             : student.persentaseKehadiran >= 75
                               ? "text-amber-500"
                               : "text-rose-500"
-                          }`}>
-                          {Math.round(student.persentaseKehadiran)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 text-center pt-2 border-t border-[var(--border-subtle)] text-[12px]">
-                      <div className="bg-[var(--surface-subtle)] p-1.5 rounded-lg">
-                        <p className="text-[10px] text-[var(--text-secondary)] font-semibold">Hadir</p>
-                        <p className="font-bold text-primary">{student.totalHadir}</p>
-                      </div>
-                      <div className="bg-[var(--surface-subtle)] p-1.5 rounded-lg">
-                        <p className="text-[10px] text-[var(--text-secondary)] font-semibold">Sakit</p>
-                        <p className="font-bold text-blue-600 dark:text-blue-400">{student.totalSakit}</p>
-                      </div>
-                      <div className="bg-[var(--surface-subtle)] p-1.5 rounded-lg">
-                        <p className="text-[10px] text-[var(--text-secondary)] font-semibold">Izin</p>
-                        <p className="font-bold text-amber-600 dark:text-amber-400">{student.totalIzin}</p>
-                      </div>
-                      <div className="bg-[var(--surface-subtle)] p-1.5 rounded-lg">
-                        <p className="text-[10px] text-[var(--text-secondary)] font-semibold">Alpa</p>
-                        <p className="font-bold text-rose-600 dark:text-rose-400">{student.totalAlpa}</p>
-                      </div>
+                        }`}
+                      >
+                        {Math.round(student.persentaseKehadiran)}%
+                      </span>
                     </div>
                   </div>
-                )}
-              />
+                  <div className="grid grid-cols-4 gap-2 text-center pt-2 border-t border-[var(--border-subtle)] text-[12px]">
+                    <div className="bg-[var(--surface-subtle)] p-1.5 rounded-lg">
+                      <p className="text-[10px] text-[var(--text-secondary)] font-semibold">
+                        Hadir
+                      </p>
+                      <p className="font-bold text-primary">
+                        {student.totalHadir}
+                      </p>
+                    </div>
+                    <div className="bg-[var(--surface-subtle)] p-1.5 rounded-lg">
+                      <p className="text-[10px] text-[var(--text-secondary)] font-semibold">
+                        Sakit
+                      </p>
+                      <p className="font-bold text-blue-600 dark:text-blue-400">
+                        {student.totalSakit}
+                      </p>
+                    </div>
+                    <div className="bg-[var(--surface-subtle)] p-1.5 rounded-lg">
+                      <p className="text-[10px] text-[var(--text-secondary)] font-semibold">
+                        Izin
+                      </p>
+                      <p className="font-bold text-amber-600 dark:text-amber-400">
+                        {student.totalIzin}
+                      </p>
+                    </div>
+                    <div className="bg-[var(--surface-subtle)] p-1.5 rounded-lg">
+                      <p className="text-[10px] text-[var(--text-secondary)] font-semibold">
+                        Alpa
+                      </p>
+                      <p className="font-bold text-rose-600 dark:text-rose-400">
+                        {student.totalAlpa}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            />
 
-              <Pagination
-                page={page}
-                totalPages={totalPages}
-                onPageChange={(newPage) => setPage(newPage)}
-                total={total}
-                limit={limit}
-              />
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(newPage) => setPage(newPage)}
+              total={total}
+              limit={limit}
+            />
           </div>
-        )}
+        </div>
+      )}
 
       {/* ─── Modal Detail & Edit Absensi Siswa ─── */}
       {selectedStudent && (
@@ -802,7 +944,8 @@ export default function AdminRekapSiswaPage() {
                   Detail Kehadiran: {selectedStudent.siswa.nama}
                 </h3>
                 <p className="text-[12px] text-[var(--text-secondary)]">
-                  NISN: {selectedStudent.siswa.nisn} | Periode: {filterPeriodLabel}
+                  NISN: {selectedStudent.siswa.nisn} | Periode:{" "}
+                  {filterPeriodLabel}
                 </p>
               </div>
               <button
@@ -821,12 +964,16 @@ export default function AdminRekapSiswaPage() {
                 </div>
               ) : studentDetailData?.records.length === 0 ? (
                 <p className="text-center py-12 text-[13px] text-[var(--text-tertiary)]">
-                  Tidak ada catatan absensi untuk siswa ini pada periode tersebut.
+                  Tidak ada catatan absensi untuk siswa ini pada periode
+                  tersebut.
                 </p>
               ) : (
                 <div className="divide-y divide-[var(--border-subtle)]">
                   {studentDetailData?.records.map((rec) => (
-                    <div key={rec.id} className="py-3 flex items-center justify-between gap-4">
+                    <div
+                      key={rec.id}
+                      className="py-3 flex items-center justify-between gap-4"
+                    >
                       <div>
                         <p className="text-[13px] font-bold text-[var(--text-primary)]">
                           {new Date(rec.tanggal).toLocaleDateString("id-ID", {
@@ -837,7 +984,11 @@ export default function AdminRekapSiswaPage() {
                           })}
                         </p>
                         <p className="text-[12px] text-[var(--text-secondary)]">
-                          Mapel: <strong className="text-[var(--text-primary)]">{rec.jadwal.mapel.nama}</strong> ({rec.jadwal.jamMulai} - {rec.jadwal.jamSelesai})
+                          Mapel:{" "}
+                          <strong className="text-[var(--text-primary)]">
+                            {rec.jadwal.mapel.nama}
+                          </strong>{" "}
+                          ({rec.jadwal.jamMulai} - {rec.jadwal.jamSelesai})
                         </p>
                         {rec.alasan && (
                           <p className="text-[11px] text-amber-600 mt-0.5">
@@ -846,7 +997,9 @@ export default function AdminRekapSiswaPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${statusMap[rec.status].bg} ${statusMap[rec.status].color}`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-[12px] font-bold ${statusMap[rec.status].bg} ${statusMap[rec.status].color}`}
+                        >
                           {statusMap[rec.status].label}
                         </span>
                         <button
@@ -883,7 +1036,9 @@ export default function AdminRekapSiswaPage() {
               </label>
               <select
                 value={editStatus}
-                onChange={(e) => setEditStatus(e.target.value as StatusAbsensiSiswa)}
+                onChange={(e) =>
+                  setEditStatus(e.target.value as StatusAbsensiSiswa)
+                }
                 className="w-full px-3 py-2 bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl text-[13px] font-bold text-[var(--text-primary)] focus:outline-none focus:border-primary cursor-pointer"
               >
                 <option value="HADIR">Hadir</option>
@@ -918,7 +1073,10 @@ export default function AdminRekapSiswaPage() {
                 disabled={savingEdit}
                 className="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-[13px] font-bold rounded-xl shadow-sm flex items-center gap-2 cursor-pointer"
               >
-                {savingEdit ? <Loader2 size={14} className="animate-spin" /> : null} Simpan Perubahan
+                {savingEdit ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : null}{" "}
+                Simpan Perubahan
               </button>
             </div>
           </div>

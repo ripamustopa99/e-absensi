@@ -63,8 +63,6 @@ export default async function RootLayout({
   const brightnessCookie = cookieStore.get("app_brightness_mode")?.value;
 
   let primaryColor = "#0FBE85";
-  let defaultLightVariant = "light";
-  let defaultDarkVariant = "dark";
   try {
     const res = await query(`SELECT value FROM setting WHERE key = $1`, ["CONFIG_THEME"]);
     if (res.rows.length > 0 && res.rows[0].value) {
@@ -72,21 +70,15 @@ export default async function RootLayout({
       if (val.primaryColor) {
         primaryColor = val.primaryColor;
       }
-      if (val.defaultLightVariant) {
-        defaultLightVariant = val.defaultLightVariant;
-      }
-      if (val.defaultDarkVariant) {
-        defaultDarkVariant = val.defaultDarkVariant;
-      }
     }
   } catch {}
 
-  let activeBrightness = defaultLightVariant;
+  let activeBrightness = "light-lighter";
   if (brightnessCookie) {
     if (brightnessCookie.includes("dark")) {
-      activeBrightness = defaultDarkVariant;
+      activeBrightness = "dark-darker";
     } else {
-      activeBrightness = defaultLightVariant;
+      activeBrightness = "light-lighter";
     }
   }
 

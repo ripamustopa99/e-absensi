@@ -9,9 +9,6 @@ export async function GET() {
     let titleTab = "";
     let logoUrl = "";
     let primaryColor = "#0FBE85";
-    let brightnessMode = "light";
-    let defaultLightVariant = "light";
-    let defaultDarkVariant = "dark";
 
     for (const row of res.rows) {
       if (row.key === "CONFIG_APP" && row.value) {
@@ -23,9 +20,6 @@ export async function GET() {
       if (row.key === "CONFIG_THEME" && row.value) {
         const val = typeof row.value === "string" ? JSON.parse(row.value) : row.value;
         if (val.primaryColor) primaryColor = val.primaryColor;
-        if (val.brightnessMode) brightnessMode = val.brightnessMode;
-        if (val.defaultLightVariant) defaultLightVariant = val.defaultLightVariant;
-        if (val.defaultDarkVariant) defaultDarkVariant = val.defaultDarkVariant;
       }
     }
 
@@ -35,9 +29,6 @@ export async function GET() {
       titleTab,
       logoUrl,
       primaryColor,
-      brightnessMode,
-      defaultLightVariant,
-      defaultDarkVariant,
     });
   } catch (err) {
     return NextResponse.json({
@@ -46,9 +37,6 @@ export async function GET() {
       titleTab: "",
       logoUrl: "",
       primaryColor: "#0FBE85",
-      brightnessMode: "light",
-      defaultLightVariant: "light",
-      defaultDarkVariant: "dark",
     });
   }
 }

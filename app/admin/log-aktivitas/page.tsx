@@ -9,6 +9,7 @@ import type { AxiosError } from "axios";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
 import Pagination from "@/components/shared/Pagination";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 
 type LogItem = {
   id: string;
@@ -51,15 +52,18 @@ export default function AdminLogAktivitasPage() {
       if (debouncedSearch) params.append("search", debouncedSearch);
       if (filterModul !== "ALL") params.append("modul", filterModul);
 
-      const res = await api.get<{ success: true; data: { logs: LogItem[]; pagination: any } }>(
-        `/admin/log-aktivitas?${params.toString()}`
-      );
+      const res = await api.get<{
+        success: true;
+        data: { logs: LogItem[]; pagination: any };
+      }>(`/admin/log-aktivitas?${params.toString()}`);
       setLogs(res.data.data.logs);
       setTotalPages(res.data.data.pagination.totalPages);
       setTotalItems(res.data.data.pagination.totalItems);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      toast.error(error.response?.data?.message ?? "Gagal memuat log aktivitas");
+      toast.error(
+        error.response?.data?.message ?? "Gagal memuat log aktivitas",
+      );
     } finally {
       setLoading(false);
     }
@@ -97,7 +101,9 @@ export default function AdminLogAktivitasPage() {
   const mobileFilters = (
     <div className="space-y-4 text-[13px]">
       <div className="space-y-1.5">
-        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Modul</label>
+        <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+          Modul
+        </label>
         <select
           value={filterModul}
           onChange={(e) => {
@@ -120,21 +126,12 @@ export default function AdminLogAktivitasPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="p-2 bg-primary/10 rounded-[var(--radius-md)] text-primary">
-              <History size={24} />
-            </div>
-            <h1 className="text-xl font-bold text-[var(--text-primary)] leading-tight">
-              Log Aktivitas Sistem (Audit Trail)
-            </h1>
-          </div>
-          <p className="text-[13px] text-[var(--text-secondary)]">
-            Pantau riwayat aktivitas dan tindakan yang dilakukan oleh pengguna di dalam aplikasi.
-          </p>
-        </div>
-      </div>
+      <AdminHeader
+        variant="icon"
+        icon={History}
+        title="Log Aktivitas Sistem (Audit Trail)"
+        description="Pantau riwayat aktivitas dan tindakan yang dilakukan oleh pengguna di dalam aplikasi."
+      />
 
       <div className="sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-2xl sm:shadow-sm sm:overflow-hidden bg-transparent border-0 shadow-none overflow-visible">
         <ModuleToolbar
@@ -149,21 +146,35 @@ export default function AdminLogAktivitasPage() {
         <DataTable
           loading={loading}
           data={logs}
-          headers={["Pengguna", "Modul & Aksi", "Waktu & Tanggal", "IP Address", "Detail"]}
+          headers={[
+            "Pengguna",
+            "Modul & Aksi",
+            "Waktu & Tanggal",
+            "IP Address",
+            "Detail",
+          ]}
           minWidth="min-w-[900px]"
           emptyMessage="Belum ada log aktivitas yang tercatat."
-          emptyIcon={<History size={36} className="mx-auto mb-3 opacity-50 text-[var(--text-tertiary)]" />}
+          emptyIcon={
+            <History
+              size={36}
+              className="mx-auto mb-3 opacity-50 text-[var(--text-tertiary)]"
+            />
+          }
           renderRow={(log) => (
-            <tr key={log.id} className="hover:bg-[var(--surface-subtle)]/60 transition-colors">
+            <tr
+              key={log.id}
+              className="hover:bg-[var(--surface-subtle)]/60 transition-colors"
+            >
               <td className="py-4 px-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-[13px] shrink-0">
-                    {log.user_nama.charAt(0)}
-                  </div>
                   <div>
-                    <p className="text-[13px] font-bold text-[var(--text-primary)]">{log.user_nama}</p>
+                    <p className="text-[13px] font-bold text-[var(--text-primary)] whitespace-nowrap">
+                      {log.user_nama}
+                    </p>
                     <p className="text-[11px] font-medium text-[var(--text-tertiary)] flex items-center gap-1">
-                      <Shield size={11} /> {log.user_role} ({log.user_kode || '-'})
+                      <Shield size={11} /> {log.user_role} (
+                      {log.user_kode || "-"})
                     </p>
                   </div>
                 </div>
@@ -173,7 +184,9 @@ export default function AdminLogAktivitasPage() {
                   <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-black uppercase bg-primary/10 text-primary">
                     {log.modul}
                   </span>
-                  <p className="text-[13px] font-bold text-[var(--text-primary)]">{log.aksi}</p>
+                  <p className="text-[13px] font-bold text-[var(--text-primary)]">
+                    {log.aksi}
+                  </p>
                 </div>
               </td>
               <td className="py-4 px-4">
@@ -186,7 +199,11 @@ export default function AdminLogAktivitasPage() {
                   })}
                 </p>
                 <p className="text-[11px] text-[var(--text-tertiary)]">
-                  {new Date(log.createdAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB
+                  {new Date(log.createdAt).toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}{" "}
+                  WIB
                 </p>
               </td>
               <td className="py-4 px-4">
@@ -202,25 +219,36 @@ export default function AdminLogAktivitasPage() {
             </tr>
           )}
           renderMobileCard={(log) => (
-            <div key={log.id} className="bg-[var(--surface)] border border-[var(--border)] p-4 rounded-xl shadow-sm space-y-2.5">
+            <div
+              key={log.id}
+              className="bg-[var(--surface)] border border-[var(--border)] p-4 rounded-xl shadow-sm space-y-2.5"
+            >
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-[12px]">
                     {log.user_nama.charAt(0)}
                   </div>
                   <div>
-                    <p className="text-[13px] font-bold text-[var(--text-primary)]">{log.user_nama}</p>
-                    <p className="text-[10px] text-[var(--text-tertiary)]">{log.user_role}</p>
+                    <p className="text-[13px] font-bold text-[var(--text-primary)]">
+                      {log.user_nama}
+                    </p>
+                    <p className="text-[10px] text-[var(--text-tertiary)]">
+                      {log.user_role}
+                    </p>
                   </div>
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-primary/10 text-primary">
                   {log.modul}
                 </span>
               </div>
-              <p className="text-[13px] font-bold text-[var(--text-primary)]">{log.aksi}</p>
+              <p className="text-[13px] font-bold text-[var(--text-primary)]">
+                {log.aksi}
+              </p>
               <div className="flex justify-between text-[11px] text-[var(--text-tertiary)] pt-2 border-t border-[var(--border-subtle)]">
                 <span>{new Date(log.createdAt).toLocaleString("id-ID")}</span>
-                <span className="font-mono">{log.ipAddress || "127.0.0.1"}</span>
+                <span className="font-mono">
+                  {log.ipAddress || "127.0.0.1"}
+                </span>
               </div>
             </div>
           )}

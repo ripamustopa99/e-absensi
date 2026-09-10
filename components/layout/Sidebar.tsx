@@ -211,7 +211,7 @@ export function Sidebar({ isOpen, setIsOpen, sections }: SidebarProps) {
                           ].join(" ")}
                         >
                           {isActive && (
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-sm" />
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary " />
                           )}
                           <div className="flex items-center gap-3">
                             <Icon
@@ -252,7 +252,7 @@ export function Sidebar({ isOpen, setIsOpen, sections }: SidebarProps) {
                           ].join(" ")}
                         >
                           {isActive && (
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-sm" />
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary " />
                           )}
                           <div className="flex items-center gap-3">
                             <Icon

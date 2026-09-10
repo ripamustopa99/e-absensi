@@ -62,7 +62,7 @@ type TeacherDetailSlot = {
   mapel: string;
   kelas: string;
   jenjang: string;
-  status: "HADIR" | "TIDAK_HADIR";
+  status: "HADIR" | "ALPA";
   waktuAbsen: string | null;
 };
 
@@ -114,7 +114,7 @@ export default function AdminRekapKehadiranGuruPage() {
 
   // Edit Absensi State
   const [editingSlot, setEditingSlot] = useState<TeacherDetailSlot | null>(null);
-  const [editStatus, setEditStatus] = useState<"HADIR" | "TIDAK_HADIR">("HADIR");
+  const [editStatus, setEditStatus] = useState<"HADIR" | "ALPA">("HADIR");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const fetchTahunAjaran = async () => {
@@ -591,13 +591,13 @@ export default function AdminRekapKehadiranGuruPage() {
                                     : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
                                 }`}
                               >
-                                {slot.status === "HADIR" ? "Hadir" : "Tidak Hadir"}
-                              </span>
-                              <button
-                                onClick={() => {
-                                  setEditingSlot(slot);
-                                  setEditStatus(slot.status === "HADIR" ? "HADIR" : "TIDAK_HADIR");
-                                }}
+                                 {slot.status === "HADIR" ? "Hadir" : "Alpa"}
+                               </span>
+                               <button
+                                 onClick={() => {
+                                   setEditingSlot(slot);
+                                   setEditStatus(slot.status === "HADIR" ? "HADIR" : "ALPA");
+                                 }}
                                 className="p-1.5 text-[var(--text-secondary)] hover:bg-[var(--border)] rounded-lg transition-colors cursor-pointer"
                                 title="Edit Status Absensi"
                               >
@@ -638,11 +638,11 @@ export default function AdminRekapKehadiranGuruPage() {
               <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Status Absensi</label>
               <select
                 value={editStatus}
-                onChange={(e) => setEditStatus(e.target.value as "HADIR" | "TIDAK_HADIR")}
+                onChange={(e) => setEditStatus(e.target.value as "HADIR" | "ALPA")}
                 className="w-full px-3.5 py-2.5 bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl text-[13px] font-semibold text-[var(--text-primary)] outline-none cursor-pointer"
               >
-                <option value="HADIR">Hadir / Tepat Waktu</option>
-                <option value="TIDAK_HADIR">Tidak Hadir / Alpa</option>
+                <option value="HADIR">Hadir</option>
+                <option value="ALPA">Alpa</option>
               </select>
             </div>
 

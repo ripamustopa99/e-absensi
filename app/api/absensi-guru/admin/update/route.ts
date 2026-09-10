@@ -26,6 +26,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, message: "Data tidak lengkap" }, { status: 400 });
     }
 
+    const validStatus = status === "HADIR" ? "HADIR" : "ALPA";
+
     // Find guruId from jadwal_mengajar
     const jadwalRes = await query(`SELECT "guruId" FROM jadwal_mengajar WHERE id = $1`, [jadwalId]);
     if (jadwalRes.rows.length === 0) {
@@ -35,10 +37,10 @@ export async function PUT(request: Request) {
 
     await query(`
       INSERT INTO absensi_guru (id, "jadwalId", "guruId", tanggal, status, "waktuAbsen", "createdAt")
-      VALUES (gen_random_uuid(), $1, $2, $3, $4, CASE WHEN $4 = 'HADIR' THEN NOW() ELSE NULL END, NOW())
+      VALUES (gen_random_uuid(), $1, $2, $3, $4::"StatusAbsensiGuru", CASE WHEN $4::"StatusAbsensiGuru" = 'HADIR'::"StatusAbsensiGuru" THEN NOW() ELSE NULL END, NOW())
       ON CONFLICT ("jadwalId", tanggal)
-      DO UPDATE SET status = $4, "waktuAbsen" = CASE WHEN $4 = 'HADIR' THEN COALESCE(absensi_guru."waktuAbsen", NOW()) ELSE NULL END
-    `, [jadwalId, guruId, tanggal, status]);
+      DO UPDATE SET status = $4::"StatusAbsensiGuru", "waktuAbsen" = CASE WHEN $4::"StatusAbsensiGuru" = 'HADIR'::"StatusAbsensiGuru" THEN COALESCE(absensi_guru."waktuAbsen", NOW()) ELSE NULL END
+    `, [jadwalId, guruId, tanggal, validStatus]);
 
     return NextResponse.json({ success: true, message: "Absensi guru berhasil diperbarui" });
   } catch (error: any) {

@@ -47,17 +47,25 @@ export async function GET(request: Request) {
       let expected = 0;
       let hadir = 0;
 
+      const getLocalDateStr = (d: Date | string) => {
+        const dateObj = typeof d === 'string' ? new Date(d) : d;
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      };
+
       const tSchedules = allSchedules.filter((s: any) => s.guruId === t.id);
       const curr = new Date(startDate);
       while (curr <= endDate) {
         const jsDay = curr.getDay();
         const dbDay = jsDay === 0 ? 7 : jsDay;
-        const dateStr = curr.toISOString().split('T')[0];
+        const dateStr = getLocalDateStr(curr);
 
         const daySchedules = tSchedules.filter((s: any) => s.hari === dbDay);
         for (const sched of daySchedules as any[]) {
           expected++;
-          const foundAbs = allAbsensi.find((a: any) => a.jadwalId === sched.id && new Date(a.tanggal).toISOString().split('T')[0] === dateStr);
+          const foundAbs = allAbsensi.find((a: any) => a.jadwalId === sched.id && getLocalDateStr(a.tanggal) === dateStr);
           if (foundAbs && (foundAbs.status === 'HADIR' || foundAbs.status === 'TELAT')) {
             hadir++;
           }

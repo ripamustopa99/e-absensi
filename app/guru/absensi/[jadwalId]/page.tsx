@@ -346,7 +346,8 @@ export default function StudentAttendancePage() {
                 {scheduleInfo.jenjang}
               </span>
               <span className="text-xs font-semibold text-[var(--text-secondary)]">
-                Tingkat {scheduleInfo.tingkatList.map((t) => t.tingkat).join(", ")}
+                Tingkat{" "}
+                {scheduleInfo.tingkatList.map((t) => t.tingkat).join(", ")}
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">
@@ -355,7 +356,9 @@ export default function StudentAttendancePage() {
           </div>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto bg-[var(--surface)] border border-[var(--border)] px-3.5 py-2 rounded-[var(--radius-lg)] shadow-sm text-[13px] font-medium text-[var(--text-secondary)]">
-          <span className="font-bold text-[var(--text-primary)]">{scheduleInfo.jamMulai} - {scheduleInfo.jamSelesai}</span>
+          <span className="font-bold text-[var(--text-primary)]">
+            {scheduleInfo.jamMulai} - {scheduleInfo.jamSelesai}
+          </span>
           <span className="text-[var(--border)]">|</span>
           <span>{displayDate}</span>
         </div>
@@ -430,7 +433,9 @@ export default function StudentAttendancePage() {
                     </label>
                     <select
                       value={attendanceFilter}
-                      onChange={(e) => setAttendanceFilter(e.target.value as any)}
+                      onChange={(e) =>
+                        setAttendanceFilter(e.target.value as any)
+                      }
                       className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                     >
                       <option value="ALL">Semua Status</option>
@@ -617,11 +622,15 @@ export default function StudentAttendancePage() {
             <div className="space-y-2 mb-6 text-[13px]">
               <div className="flex items-center justify-between text-[var(--text-secondary)]">
                 <span>Belum Diset</span>
-                <span className="font-bold text-[var(--text-primary)]">{summaryData.BELUM}</span>
+                <span className="font-bold text-[var(--text-primary)]">
+                  {summaryData.BELUM}
+                </span>
               </div>
               <div className="flex items-center justify-between text-[var(--text-secondary)] pt-2 border-t border-[var(--border-subtle)]">
                 <span>Total Siswa</span>
-                <span className="font-bold text-[var(--text-primary)]">{scheduleInfo.siswa.length}</span>
+                <span className="font-bold text-[var(--text-primary)]">
+                  {scheduleInfo.siswa.length}
+                </span>
               </div>
             </div>
 

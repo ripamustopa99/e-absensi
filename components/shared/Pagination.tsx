@@ -24,7 +24,7 @@ export default function Pagination({
   const endItem = total ? Math.min(page * limit, total) : 0;
 
   return (
-    <div className="px-5 py-3 border-t border-[var(--border)] bg-[var(--surface-subtle)] flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-[var(--text-secondary)] font-medium">
+    <div className="px-5 py-3 border-t border-[var(--border)] sm:bg-[var(--surface-subtle)] bg-transparent flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-[var(--text-secondary)] font-medium">
       <span>
         {total !== undefined ? (
           <>

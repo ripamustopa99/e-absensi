@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api";
 import Modal from "@/components/shared/Modal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import {
   HelpCircle,
   MessageSquarePlus,
@@ -45,7 +46,9 @@ type Props = {
 };
 
 export default function SharedHelpPage({ userRole }: Props) {
-  const [activeTab, setActiveTab] = useState<"faq" | "kirim" | "riwayat">("faq");
+  const [activeTab, setActiveTab] = useState<"faq" | "kirim" | "riwayat">(
+    "faq",
+  );
   const [masukanList, setMasukanList] = useState<MasukanItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -56,7 +59,9 @@ export default function SharedHelpPage({ userRole }: Props) {
   const [pesan, setPesan] = useState("");
 
   // Admin response modal state
-  const [selectedMasukan, setSelectedMasukan] = useState<MasukanItem | null>(null);
+  const [selectedMasukan, setSelectedMasukan] = useState<MasukanItem | null>(
+    null,
+  );
   const [adminStatus, setAdminStatus] = useState("MENUNGGU");
   const [adminTanggapan, setAdminTanggapan] = useState("");
 
@@ -68,7 +73,9 @@ export default function SharedHelpPage({ userRole }: Props) {
   const [faqJawaban, setFaqJawaban] = useState("");
   const [faqUrutan, setFaqUrutan] = useState<number>(0);
 
-  const waitingCount = masukanList.filter((item) => item.status === "MENUNGGU").length;
+  const waitingCount = masukanList.filter(
+    (item) => item.status === "MENUNGGU",
+  ).length;
 
   const fetchFaqs = useCallback(async () => {
     try {
@@ -82,7 +89,9 @@ export default function SharedHelpPage({ userRole }: Props) {
   const fetchMasukan = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<{ success: true; data: MasukanItem[] }>("/masukan");
+      const res = await api.get<{ success: true; data: MasukanItem[] }>(
+        "/masukan",
+      );
       setMasukanList(res.data.data || []);
     } catch {
       // ignore
@@ -189,21 +198,13 @@ export default function SharedHelpPage({ userRole }: Props) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12 px-4 sm:px-0">
-      {/* Header */}
-      <div className="flex items-center gap-3.5 bg-[var(--surface)] border border-[var(--border)] sm:border-0 sm:bg-transparent p-4 sm:p-0 rounded-2xl shadow-sm sm:shadow-none">
-        <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-sm" style={{ backgroundColor: "var(--primary)" }}>
-          <HelpCircle size={22} />
-        </div>
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">
-            Pusat Bantuan & Masukan
-          </h1>
-          <p className="text-[12px] sm:text-[13px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">
-            Temukan panduan penggunaan sistem atau sampaikan masukan, saran, serta kendala Anda.
-          </p>
-        </div>
-      </div>
+    <div className="max-w-5xl mx-auto space-y-6 pb-12 px-4 sm:px-0">
+      <AdminHeader
+        variant="icon"
+        icon={HelpCircle}
+        title="Pusat Bantuan & Masukan"
+        description="Temukan panduan penggunaan sistem atau sampaikan masukan, saran, serta kendala Anda."
+      />
 
       {/* Tabs */}
       <div className="flex border-b border-[var(--border)] gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap scrollbar-none pb-0">
@@ -238,7 +239,8 @@ export default function SharedHelpPage({ userRole }: Props) {
           }`}
         >
           <Clock size={16} />
-          {userRole === "ADMIN" ? "Kelola Masukan Masuk" : "Riwayat Masukan"} ({masukanList.length})
+          {userRole === "ADMIN" ? "Kelola Masukan Masuk" : "Riwayat Masukan"} (
+          {masukanList.length})
           {userRole === "ADMIN" && waitingCount > 0 && (
             <span className="ml-1 px-1.5 py-0.5 bg-rose-500 text-white text-[10px] font-extrabold rounded-full animate-pulse">
               {waitingCount} baru
@@ -280,14 +282,20 @@ export default function SharedHelpPage({ userRole }: Props) {
               faqList.map((faq, idx) => {
                 const isOpen = openFaq === idx;
                 return (
-                  <div key={faq.id} className="border border-[var(--border)] rounded-xl overflow-hidden bg-[var(--surface-subtle)]">
+                  <div
+                    key={faq.id}
+                    className="border border-[var(--border)] rounded-xl overflow-hidden bg-[var(--surface-subtle)]"
+                  >
                     <div className="w-full flex items-center justify-between p-4 text-left font-bold text-[13px] text-[var(--text-primary)]">
                       <button
                         onClick={() => setOpenFaq(isOpen ? null : idx)}
                         className="flex-1 flex items-center justify-between text-left cursor-pointer pr-2"
                       >
                         <span>{faq.pertanyaan}</span>
-                        <ChevronDown size={16} className={`transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+                        <ChevronDown
+                          size={16}
+                          className={`transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`}
+                        />
                       </button>
                       {userRole === "ADMIN" && (
                         <div className="flex items-center gap-1 ml-2 shrink-0 border-l border-[var(--border)] pl-2">
@@ -325,10 +333,21 @@ export default function SharedHelpPage({ userRole }: Props) {
             )}
           </div>
 
-          <div className="p-4 rounded-xl mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" style={{ backgroundColor: "var(--primary-subtle)", borderColor: "var(--border)", borderWidth: 1 }}>
+          <div
+            className="p-4 rounded-xl mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+            style={{
+              backgroundColor: "var(--primary-subtle)",
+              borderColor: "var(--border)",
+              borderWidth: 1,
+            }}
+          >
             <div>
-              <p className="text-[13px] font-bold text-[var(--text-primary)]">Butuh bantuan teknis mendesak?</p>
-              <p className="text-[11px] text-[var(--text-secondary)]">Hubungi tim IT sekolah melalui WhatsApp atau email dukungan.</p>
+              <p className="text-[13px] font-bold text-[var(--text-primary)]">
+                Butuh bantuan teknis mendesak?
+              </p>
+              <p className="text-[11px] text-[var(--text-secondary)]">
+                Hubungi tim IT sekolah melalui WhatsApp atau email dukungan.
+              </p>
             </div>
             <a
               href="https://wa.me/"
@@ -398,7 +417,11 @@ export default function SharedHelpPage({ userRole }: Props) {
               className="w-full sm:w-auto px-5 py-2.5 text-white text-[13px] font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
               style={{ backgroundColor: "var(--primary)" }}
             >
-              {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              {submitting ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Send size={16} />
+              )}
               Kirim Masukan
             </button>
           </form>
@@ -410,7 +433,9 @@ export default function SharedHelpPage({ userRole }: Props) {
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
             <h2 className="text-[15px] font-bold text-[var(--text-primary)]">
-              {userRole === "ADMIN" ? "Semua Masukan & Kendala Masuk" : "Riwayat Masukan Saya"}
+              {userRole === "ADMIN"
+                ? "Semua Masukan & Kendala Masuk"
+                : "Riwayat Masukan Saya"}
             </h2>
             <button
               onClick={fetchMasukan}
@@ -423,7 +448,11 @@ export default function SharedHelpPage({ userRole }: Props) {
 
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loader2 size={24} className="animate-spin" style={{ color: "var(--primary)" }} />
+              <Loader2
+                size={24}
+                className="animate-spin"
+                style={{ color: "var(--primary)" }}
+              />
             </div>
           ) : masukanList.length === 0 ? (
             <p className="text-center py-12 text-[12px] text-[var(--text-tertiary)]">
@@ -436,13 +465,24 @@ export default function SharedHelpPage({ userRole }: Props) {
                 const isDitinjau = item.status === "DITINJAU";
 
                 return (
-                  <div key={item.id} className="p-4 bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl space-y-3">
+                  <div
+                    key={item.id}
+                    className="p-4 bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl space-y-3"
+                  >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-1 text-[10px] font-extrabold rounded-md" style={{ backgroundColor: "var(--primary-subtle)", color: "var(--primary)" }}>
+                        <span
+                          className="px-2.5 py-1 text-[10px] font-extrabold rounded-md"
+                          style={{
+                            backgroundColor: "var(--primary-subtle)",
+                            color: "var(--primary)",
+                          }}
+                        >
                           {item.kategori}
                         </span>
-                        <h3 className="text-[14px] font-bold text-[var(--text-primary)]">{item.subjek}</h3>
+                        <h3 className="text-[14px] font-bold text-[var(--text-primary)]">
+                          {item.subjek}
+                        </h3>
                       </div>
                       <div className="flex items-center gap-2">
                         <span
@@ -450,11 +490,17 @@ export default function SharedHelpPage({ userRole }: Props) {
                             isSelesai
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                               : isDitinjau
-                              ? "bg-blue-500/10 text-blue-500"
-                              : "bg-amber-500/10 text-amber-500"
+                                ? "bg-blue-500/10 text-blue-500"
+                                : "bg-amber-500/10 text-amber-500"
                           }`}
                         >
-                          {isSelesai ? <CheckCircle2 size={12} /> : isDitinjau ? <Clock size={12} /> : <AlertCircle size={12} />}
+                          {isSelesai ? (
+                            <CheckCircle2 size={12} />
+                          ) : isDitinjau ? (
+                            <Clock size={12} />
+                          ) : (
+                            <AlertCircle size={12} />
+                          )}
                           {item.status}
                         </span>
                         {userRole === "ADMIN" && (
@@ -472,18 +518,29 @@ export default function SharedHelpPage({ userRole }: Props) {
                       </div>
                     </div>
 
-                    <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed">{item.pesan}</p>
+                    <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed">
+                      {item.pesan}
+                    </p>
 
                     {item.user && userRole === "ADMIN" && (
                       <p className="text-[11px] text-[var(--text-tertiary)] flex items-center gap-1 pt-1 border-t border-[var(--border)] mt-2 pt-2">
-                        <User size={12} /> Dikirim oleh: <span className="font-bold">{item.user.nama}</span> ({item.user.role})
+                        <User size={12} /> Dikirim oleh:{" "}
+                        <span className="font-bold">{item.user.nama}</span> (
+                        {item.user.role})
                       </p>
                     )}
 
                     {item.tanggapanAdmin && (
                       <div className="mt-2 p-3 bg-[var(--surface)] border border-[var(--border)] rounded-lg space-y-1">
-                        <p className="text-[11px] font-bold" style={{ color: "var(--primary)" }}>Tanggapan Admin:</p>
-                        <p className="text-[12px] text-[var(--text-primary)]">{item.tanggapanAdmin}</p>
+                        <p
+                          className="text-[11px] font-bold"
+                          style={{ color: "var(--primary)" }}
+                        >
+                          Tanggapan Admin:
+                        </p>
+                        <p className="text-[12px] text-[var(--text-primary)]">
+                          {item.tanggapanAdmin}
+                        </p>
                       </div>
                     )}
                   </div>
