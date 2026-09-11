@@ -400,13 +400,14 @@ export function MapelManagementView({ jenjang }: MapelManagementViewProps) {
           loading={isLoading}
           data={mapelList}
           headers={["No", "Mata Pelajaran", "Kurikulum & Tingkat", "Pengampu", "Jadwal", "Status", "Aksi"]}
-          minWidth="min-w-[750px]"
+          alignments={["left", "left", "left", "center", "center", "center", "right"]}
+          minWidth="min-w-[900px]"
           emptyMessage="Tidak ada data ditemukan."
           emptyIcon={<BookOpen size={36} className="mx-auto mb-3 opacity-50" />}
           renderRow={(item, idx) => (
             <tr key={item.id} className="hover:bg-[var(--surface-subtle)]/50 transition-colors group">
               <td className="py-4 px-5 text-[12px] font-medium text-[var(--text-tertiary)]">{(page - 1) * limit + idx + 1}</td>
-              <td className="py-4 px-5">
+              <td className="py-4 px-5 whitespace-nowrap">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <BookOpen size={16} />
@@ -414,7 +415,7 @@ export function MapelManagementView({ jenjang }: MapelManagementViewProps) {
                   <span className="text-[14px] font-bold text-[var(--text-primary)]">{item.nama}</span>
                 </div>
               </td>
-              <td className="py-4 px-5">
+              <td className="py-4 px-5 whitespace-nowrap">
                 <div className="flex flex-col gap-1">
                   <span className="text-[12px] font-semibold text-[var(--text-primary)]">{Array.isArray(item.kurikulum) ? item.kurikulum.join(", ") : item.kurikulum}</span>
                   <span className="text-[11px] text-[var(--text-secondary)]">{item.tingkat?.length > 0 ? `Tingkat ${item.tingkat.join(", ")}` : "Semua Tingkat"}</span>

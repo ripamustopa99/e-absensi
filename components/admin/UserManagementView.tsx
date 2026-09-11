@@ -20,6 +20,7 @@ import Modal from "@/components/shared/Modal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
+import { Select } from "@/components/shared/Select";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { Users } from "lucide-react";
 import { toast } from "sonner";
@@ -308,15 +309,15 @@ export function UserManagementView() {
   };
 
   const desktopFilters = (
-    <select
+    <Select
       value={filterAktif}
       onChange={(e) => setFilterAktif(e.target.value)}
-      className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[12px] font-medium text-[var(--text-primary)] outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+      className="py-2 text-[12px] font-medium"
     >
       <option value="ALL">Semua Status (Aktif & Nonaktif)</option>
       <option value="true">Hanya Aktif</option>
       <option value="false">Hanya Nonaktif</option>
-    </select>
+    </Select>
   );
 
   const mobileFilters = (
@@ -324,15 +325,14 @@ export function UserManagementView() {
       <label className="text-[11px] font-bold uppercase text-[var(--text-secondary)]">
         Status Akun
       </label>
-      <select
+      <Select
         value={filterAktif}
         onChange={(e) => setFilterAktif(e.target.value)}
-        className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none"
       >
         <option value="ALL">Semua Status</option>
         <option value="true">Aktif</option>
         <option value="false">Nonaktif</option>
-      </select>
+      </Select>
     </div>
   );
 
@@ -378,6 +378,7 @@ export function UserManagementView() {
             "Status Akun",
             "Aksi",
           ]}
+          alignments={["left", "left", "left", "left", "left", "center", "right"]}
           minWidth="min-w-[850px]"
           emptyMessage="Tidak ada data guru yang ditemukan."
           emptyIcon={<User size={36} className="mx-auto mb-3 opacity-50" />}
@@ -682,17 +683,16 @@ export function UserManagementView() {
               <label className="text-[11px] font-bold uppercase text-[var(--text-secondary)] tracking-wider">
                 Jenis Kelamin
               </label>
-              <select
+              <Select
                 value={formData.jenisKelamin}
                 onChange={(e) =>
                   setFormData({ ...formData, jenisKelamin: e.target.value })
                 }
-                className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
               >
                 <option value="">— Belum Diset —</option>
                 <option value="Laki-laki">Laki-laki</option>
                 <option value="Perempuan">Perempuan</option>
-              </select>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold uppercase text-[var(--text-secondary)] tracking-wider">

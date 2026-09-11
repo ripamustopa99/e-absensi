@@ -764,14 +764,16 @@ export default function AdminRekapSiswaPage() {
               loading={false}
               data={studentList}
               headers={[
-                "Siswa",
+                "No",
+                "Siswa & NISN",
                 "Hadir",
                 "Sakit",
                 "Izin",
                 "Alpa",
                 "Persentase & Aksi",
               ]}
-              minWidth="min-w-[900px]"
+              alignments={["left", "left", "center", "center", "center", "center", "right"]}
+              minWidth="min-w-[1000px]"
               emptyMessage="Belum ada data siswa pada kelas dan periode ini."
               emptyIcon={
                 <Users
@@ -779,13 +781,16 @@ export default function AdminRekapSiswaPage() {
                   className="mx-auto mb-3 opacity-50 text-[var(--text-tertiary)]"
                 />
               }
-              renderRow={(student) => (
+              renderRow={(student, idx) => (
                 <tr
                   key={student.id}
                   onClick={() => fetchStudentDetail(student)}
                   className="hover:bg-[var(--surface-subtle)]/60 transition-colors cursor-pointer group"
                 >
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-5 text-[12px] font-medium text-[var(--text-tertiary)] whitespace-nowrap">
+                    {(page - 1) * limit + idx + 1}
+                  </td>
+                  <td className="py-4 px-5 whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-[14px]">
                         {student.siswa.nama.charAt(0)}
@@ -800,27 +805,27 @@ export default function AdminRekapSiswaPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-4 text-center whitespace-nowrap">
                     <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-primary/10 text-primary text-[12px] font-bold">
                       {student.totalHadir}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-4 text-center whitespace-nowrap">
                     <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 text-[12px] font-bold">
                       {student.totalSakit}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-4 text-center whitespace-nowrap">
                     <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 text-[12px] font-bold">
                       {student.totalIzin}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-4 text-center whitespace-nowrap">
                     <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-[12px] font-bold">
                       {student.totalAlpa}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-5 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-3">
                       <div className="w-24 h-2 bg-[var(--surface-subtle)] rounded-full overflow-hidden border border-[var(--border-subtle)]">
                         <div

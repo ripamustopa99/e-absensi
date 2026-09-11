@@ -1,8 +1,10 @@
 /* eslint-disable */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { jwtVerify } from "jose";
 import { query } from "@/lib/db";
 import { ensureAbsensiSiswaTableExists } from "@/lib/academic-helper";
+import { JWT_SECRET } from "@/lib/jwt";
 
 export async function POST(
   request: Request,
@@ -17,6 +19,9 @@ export async function POST(
     if (!token) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
+
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const userId = payload.id as string;
 
     const body = await request.json();
     const { absensi, materiAjar } = body;
@@ -42,6 +47,15 @@ export async function POST(
         [jadwalId, item.siswaId, todayStr, item.status, item.alasan || null, materiAjar || null]
       );
     }
+
+    // Automatically record teacher as HADIR upon first submit
+    await query(
+      `INSERT INTO absensi_guru (id, "jadwalId", "guruId", tanggal, "waktuAbsen", status, "createdAt")
+       VALUES (gen_random_uuid(), $1, $2, $3, NOW(), 'HADIR', NOW())
+       ON CONFLICT ("jadwalId", tanggal)
+       DO NOTHING`,
+      [jadwalId, userId, todayStr]
+    );
 
     return NextResponse.json({ success: true, message: "Absensi siswa berhasil disimpan" });
   } catch (error: any) {

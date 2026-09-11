@@ -535,6 +535,7 @@ export default function KehadiranGuruPage() {
               loading={loading}
               data={data.details}
               headers={["Jadwal & Waktu", "Pelajaran", "Waktu Absen", "Status"]}
+              alignments={["left", "left", "center", "right"]}
               minWidth="min-w-[700px]"
               emptyMessage="Tidak ada data kehadiran yang sesuai filter"
               emptyIcon={
@@ -553,7 +554,7 @@ export default function KehadiranGuruPage() {
                     key={`${item.jadwalId}-${item.tanggal}`}
                     className="hover:bg-[var(--surface-subtle)]/50 transition-colors group"
                   >
-                    <td className="py-4 px-5">
+                    <td className="py-4 px-5 whitespace-nowrap">
                       <div className="flex flex-col">
                         <span className="text-[13px] font-bold text-[var(--text-primary)] group-hover:text-primary transition-colors">
                           {item.namaHari},{" "}
@@ -568,7 +569,7 @@ export default function KehadiranGuruPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-5">
+                    <td className="py-4 px-5 whitespace-nowrap">
                       <div className="flex flex-col">
                         <span className="text-[13px] font-bold text-[var(--text-primary)]">
                           {item.mapel}
@@ -578,7 +579,7 @@ export default function KehadiranGuruPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-5 text-center">
+                    <td className="py-4 px-5 text-center whitespace-nowrap">
                       <span className="text-[13px] font-bold text-[var(--text-primary)]">
                         {item.waktuAbsen
                           ? new Date(item.waktuAbsen).toLocaleTimeString(
@@ -592,7 +593,7 @@ export default function KehadiranGuruPage() {
                           : "-"}
                       </span>
                     </td>
-                    <td className="py-4 px-5 text-right">
+                    <td className="py-4 px-5 text-right whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${Conf.bg} ${Conf.border} border rounded-[var(--radius-md)] ${Conf.color} text-[11px] font-bold`}
                       >

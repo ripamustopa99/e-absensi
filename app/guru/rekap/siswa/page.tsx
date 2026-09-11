@@ -621,6 +621,7 @@ export default function GuruRekapPage() {
                   loading={false}
                   data={studentList}
                   headers={["Siswa & NISN", "Hadir", "Sakit", "Izin", "Alpa", "Persentase"]}
+                  alignments={["left", "center", "center", "center", "center", "right"]}
                   minWidth="min-w-[900px]"
                   emptyMessage="Belum ada data absensi pada periode ini."
                   emptyIcon={<Users size={36} className="mx-auto mb-3 opacity-50 text-[var(--text-tertiary)]" />}
@@ -629,7 +630,7 @@ export default function GuruRekapPage() {
                       key={student.id}
                       className="hover:bg-[var(--surface-subtle)]/50 transition-colors"
                     >
-                      <td className="py-3.5 px-5">
+                      <td className="py-3.5 px-5 whitespace-nowrap">
                         <p className="text-[13px] font-bold text-[var(--text-primary)]">
                           {student.siswa.nama}
                         </p>
@@ -637,27 +638,27 @@ export default function GuruRekapPage() {
                           {student.siswa.nisn}
                         </p>
                       </td>
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-3.5 px-3 text-center whitespace-nowrap">
                         <span className="inline-flex items-center justify-center w-8 h-8 bg-primary/10 text-primary rounded-full text-[12px] font-bold">
                           {student.totalHadir}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-3.5 px-3 text-center whitespace-nowrap">
                         <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-50 text-blue-600 rounded-full text-[12px] font-bold dark:bg-blue-500/10 dark:text-blue-400">
                           {student.totalSakit}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-3.5 px-3 text-center whitespace-nowrap">
                         <span className="inline-flex items-center justify-center w-8 h-8 bg-amber-50 text-amber-600 rounded-full text-[12px] font-bold dark:bg-amber-500/10 dark:text-amber-400">
                           {student.totalIzin}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-3.5 px-3 text-center whitespace-nowrap">
                         <span className="inline-flex items-center justify-center w-8 h-8 bg-rose-50 text-rose-600 rounded-full text-[12px] font-bold dark:bg-rose-500/10 dark:text-rose-400">
                           {student.totalAlpa}
                         </span>
                       </td>
-                      <td className="py-3.5 px-5 text-right">
+                      <td className="py-3.5 px-5 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
                           <div className="w-12 h-1.5 bg-[var(--surface-subtle)] rounded-full overflow-hidden border border-[var(--border-subtle)]">
                             <div

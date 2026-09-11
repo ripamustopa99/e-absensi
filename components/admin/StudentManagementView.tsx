@@ -29,6 +29,7 @@ import Modal from "@/components/shared/Modal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
+import { Select } from "@/components/shared/Select";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 
 type KategoriKelas = "MA" | "MTS";
@@ -390,10 +391,10 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
         {isPromotionMode ? "Tutup Mode Kenaikan" : "⚙️ Mode Kenaikan"}
       </button>
 
-      <select
+      <Select
         value={selectedTahunAjaranId}
         onChange={(e) => setSelectedTahunAjaranId(e.target.value)}
-        className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[12px] font-bold text-[var(--text-primary)] outline-none cursor-pointer"
+        className="py-2 text-[12px] font-bold"
       >
         <option value="ALL">Semua TA</option>
         {tahunAjaranList
@@ -403,12 +404,12 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
               {t.label}
             </option>
           ))}
-      </select>
+      </Select>
 
-      <select
+      <Select
         value={filterTingkat}
         onChange={(e) => setFilterTingkat(e.target.value)}
-        className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[12px] font-medium text-[var(--text-primary)] outline-none cursor-pointer"
+        className="py-2 text-[12px] font-medium"
       >
         <option value="ALL">Semua Tingkat</option>
         {availableTingkat.map((t) => (
@@ -416,28 +417,28 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
             Tingkat {t}
           </option>
         ))}
-      </select>
+      </Select>
 
-      <select
+      <Select
         value={filterJenisKelamin}
         onChange={(e) => setFilterJenisKelamin(e.target.value)}
-        className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[12px] font-medium text-[var(--text-primary)] outline-none cursor-pointer"
+        className="py-2 text-[12px] font-medium"
       >
         <option value="ALL">Semua Gender</option>
         <option value="Laki-laki">Laki-laki</option>
         <option value="Perempuan">Perempuan</option>
-      </select>
+      </Select>
 
-      <select
+      <Select
         value={filterStatus}
         onChange={(e) => setFilterStatus(e.target.value)}
-        className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[12px] font-medium text-[var(--text-primary)] outline-none cursor-pointer"
+        className="py-2 text-[12px] font-medium"
       >
         <option value="ALL">Semua Status</option>
         <option value="AKTIF">Aktif</option>
         <option value="MUTASI">Mutasi</option>
         <option value="LULUS">Lulus</option>
-      </select>
+      </Select>
     </>
   );
 
@@ -447,10 +448,9 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
           Tahun Ajaran
         </label>
-        <select
+        <Select
           value={selectedTahunAjaranId}
           onChange={(e) => setSelectedTahunAjaranId(e.target.value)}
-          className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none"
         >
           <option value="ALL">Semua Tahun Ajaran</option>
           {tahunAjaranList
@@ -460,17 +460,16 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
                 {t.label}
               </option>
             ))}
-        </select>
+        </Select>
       </div>
 
       <div className="space-y-1">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
           Tingkat
         </label>
-        <select
+        <Select
           value={filterTingkat}
           onChange={(e) => setFilterTingkat(e.target.value)}
-          className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none"
         >
           <option value="ALL">Semua Tingkat</option>
           {availableTingkat.map((t) => (
@@ -478,38 +477,36 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
               Tingkat {t}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div className="space-y-1">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
           Gender
         </label>
-        <select
+        <Select
           value={filterJenisKelamin}
           onChange={(e) => setFilterJenisKelamin(e.target.value)}
-          className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none"
         >
           <option value="ALL">Semua Gender</option>
           <option value="Laki-laki">Laki-laki</option>
           <option value="Perempuan">Perempuan</option>
-        </select>
+        </Select>
       </div>
 
       <div className="space-y-1">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
           Status
         </label>
-        <select
+        <Select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none"
         >
           <option value="ALL">Semua Status</option>
           <option value="AKTIF">Aktif</option>
           <option value="MUTASI">Mutasi</option>
           <option value="LULUS">Lulus</option>
-        </select>
+        </Select>
       </div>
       <div className="pt-2 border-t border-[var(--border)]">
         <button
@@ -618,7 +615,8 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
             "Status Sistem",
             "Aksi",
           ]}
-          minWidth="min-w-[1000px]"
+          alignments={isPromotionMode ? ["center", "left", "left", "left", "left", "center", "right"] : ["left", "left", "left", "left", "center", "right"]}
+          minWidth="min-w-[1150px]"
           emptyMessage={`Tidak ada data siswa ${jenjang} yang ditemukan.`}
           emptyIcon={<Users size={36} className="mx-auto mb-3 opacity-50" />}
           renderRow={(item, _idx) => {
@@ -645,7 +643,7 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
                   </td>
                 )}
                 <td
-                  className="py-4 px-4 cursor-pointer"
+                  className="py-4 px-4 cursor-pointer whitespace-nowrap"
                   onClick={() => setSelectedSiswaDetail(item)}
                 >
                   <div className="flex flex-col">
@@ -665,7 +663,7 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
                   </div>
                 </td>
                 <td
-                  className="py-4 px-4 cursor-pointer"
+                  className="py-4 px-4 cursor-pointer whitespace-nowrap"
                   onClick={() => setSelectedSiswaDetail(item)}
                 >
                   <div className="flex flex-col gap-0.5 items-start">
@@ -687,12 +685,12 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
                     </span>
                   </div>
                 </td>
-                <td className="py-4 px-4">
+                <td className="py-4 px-4 whitespace-nowrap">
                   <span className="text-[12px] text-[var(--text-primary)] font-medium">
                     {formatDate(item.tanggalLahir)}
                   </span>
                 </td>
-                <td className="py-4 px-4">
+                <td className="py-4 px-4 whitespace-nowrap">
                   <span className="text-[12px] text-[var(--text-primary)] font-medium">
                     {item.namaOrangTua ?? "—"}
                   </span>

@@ -12,6 +12,7 @@ type DataTableProps<T> = {
   emptyMessage?: string;
   emptyIcon?: React.ReactNode;
   minWidth?: string;
+  alignments?: ("left" | "center" | "right")[];
 };
 
 export default function DataTable<T>({
@@ -23,6 +24,7 @@ export default function DataTable<T>({
   emptyMessage = "Tidak ada data yang ditemukan.",
   emptyIcon = <Inbox size={36} className="mx-auto mb-3 opacity-50" />,
   minWidth = "min-w-[850px]",
+  alignments,
 }: DataTableProps<T>) {
   const safeData = data || [];
 
@@ -51,20 +53,19 @@ export default function DataTable<T>({
         <table className={`w-full ${minWidth}`}>
           <thead>
             <tr className="bg-[var(--surface-subtle)] border-b border-[var(--border)]">
-              {headers.map((header, idx) => (
-                <th
-                  key={idx}
-                  className={`py-3.5 px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)] ${
-                    idx === 0
-                      ? "text-left w-12"
-                      : idx === headers.length - 1
-                      ? "text-right"
-                      : "text-left"
-                  }`}
-                >
-                  {header}
-                </th>
-              ))}
+              {headers.map((header, idx) => {
+                const align = alignments ? alignments[idx] : (idx === 0 ? "left" : idx === headers.length - 1 ? "right" : "left");
+                const alignClass = align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
+                const widthClass = idx === 0 && (!alignments || alignments[0] === "left") ? "w-12" : "";
+                return (
+                  <th
+                    key={idx}
+                    className={`py-3.5 px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)] ${alignClass} ${widthClass}`}
+                  >
+                    {header}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border-subtle)]">

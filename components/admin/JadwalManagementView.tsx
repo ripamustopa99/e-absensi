@@ -336,13 +336,14 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
           loading={loading}
           data={filteredJadwal}
           headers={["No", "Waktu (Hari & Jam)", "Tingkat", "Mata Pelajaran", "Guru Pengampu", "Aksi"]}
-          minWidth="min-w-[900px]"
+          alignments={["left", "left", "left", "left", "left", "right"]}
+          minWidth="min-w-[1000px]"
           emptyMessage={`Belum ada jadwal ${jenjang} yang terdaftar.`}
           emptyIcon={<CalendarDays size={36} className="mx-auto mb-3 opacity-50" />}
           renderRow={(j, idx) => (
             <tr key={j.id} className="hover:bg-[var(--surface-subtle)]/50 transition-colors group">
               <td className="py-4 px-5 text-[12px] font-medium text-[var(--text-tertiary)]">{(page - 1) * limit + idx + 1}</td>
-              <td className="py-4 px-5">
+              <td className="py-4 px-5 whitespace-nowrap">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex w-[70px] text-[14px] font-bold text-[var(--text-primary)]">
                     {j.namaHari}
@@ -353,7 +354,7 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
                   </div>
                 </div>
               </td>
-              <td className="py-4 px-5">
+              <td className="py-4 px-5 whitespace-nowrap">
                 <div className="flex flex-wrap gap-1">
                   {j.tingkatList.map(t => (
                     <span key={t.tingkat} className="inline-flex px-2 py-1 rounded-[var(--radius-md)] text-[12px] font-bold bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400 border border-purple-200">
@@ -362,7 +363,7 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
                   ))}
                 </div>
               </td>
-              <td className="py-4 px-5">
+              <td className="py-4 px-5 whitespace-nowrap">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--text-secondary)] border border-[var(--border)] shrink-0">
                     <BookOpen size={14} />
@@ -370,7 +371,7 @@ export function JadwalManagementView({ jenjang }: JadwalManagementViewProps) {
                   <span className="text-[14px] font-bold text-[var(--text-primary)]">{j.mapel?.nama ?? "-"}</span>
                 </div>
               </td>
-              <td className="py-4 px-5">
+              <td className="py-4 px-5 whitespace-nowrap">
                 <span className="text-[13px] font-semibold text-[var(--text-primary)]">{j.guru?.nama ?? "Belum ditentukan"}</span>
               </td>
               <td className="py-4 px-5 text-right">

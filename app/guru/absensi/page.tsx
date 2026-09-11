@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { api } from "@/lib/api";
 import DataTable from "@/components/shared/DataTable";
-import Modal from "@/components/shared/Modal";
 import {
   Clock,
   CalendarDays,
@@ -16,7 +15,6 @@ import {
   Loader2,
   BookOpen,
   UserCheck,
-  CheckSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
@@ -209,12 +207,6 @@ export default function AbsensiPage() {
   void tahunAjaranList;
   void setSearchRiwayat;
 
-  const [selectedJadwal, setSelectedJadwal] = useState<AttendanceCard | null>(
-    null,
-  );
-  const [isReadyToTeach, setIsReadyToTeach] = useState(false);
-  const [isSubmittingAbsenGuru, setIsSubmittingAbsenGuru] = useState(false);
-
   const todayHari = getTodayHari();
   const todayDateStr = getTodayDateString();
   const todayIso = getTodayIso();
@@ -335,19 +327,7 @@ export default function AbsensiPage() {
   });
 
   const handleMulaiAbsen = (card: AttendanceCard) => {
-    // Jika di halaman admin sudah dikonfirmasi (sudahAbsen), jangan munculkan modal konfirmasi lagi, langsung arahkan ke halaman absensi
-    if (card.statusAbsensi?.sudahAbsen) {
-      router.push(`/guru/absensi/${card.id}?tanggal=${todayIso}`);
-      return;
-    }
-    setSelectedJadwal(card);
-    setIsReadyToTeach(false);
-  };
-
-  const submitAbsensiGuru = () => {
-    if (!selectedJadwal || !isReadyToTeach) return;
-    setIsSubmittingAbsenGuru(true);
-    router.push(`/guru/absensi/${selectedJadwal.id}?tanggal=${todayIso}`);
+    router.push(`/guru/absensi/${card.id}?tanggal=${todayIso}`);
   };
 
   const handleClickSession = (session: SessionRiwayat) => {
@@ -607,98 +587,6 @@ export default function AbsensiPage() {
         </div>
       </div>
 
-      {/* Teacher Attendance Confirmation Modal */}
-      <Modal
-        isOpen={!!selectedJadwal}
-        onClose={() => setSelectedJadwal(null)}
-        title="Konfirmasi Absensi"
-        description="Validasi sesi mengajar hari ini"
-        maxWidth="md"
-      >
-        {selectedJadwal && (
-          <div className="space-y-5">
-            <div className="bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl p-4 space-y-3">
-              <div className="flex items-center gap-3 text-[13px]">
-                <CalendarDays size={16} className="text-primary" />
-                <span className="font-semibold text-[var(--text-primary)]">
-                  {todayDateStr}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 text-[13px]">
-                <Clock size={16} className="text-blue-500" />
-                <span className="font-semibold text-[var(--text-primary)]">
-                  {selectedJadwal.jamMulai} - {selectedJadwal.jamSelesai} WIB
-                </span>
-              </div>
-              <div className="flex items-center gap-3 text-[13px]">
-                <BookOpen size={16} className="text-amber-500" />
-                <span className="font-semibold text-[var(--text-primary)]">
-                  Jenjang{" "}
-                  {selectedJadwal.tahunAjaran
-                    ? selectedJadwal.tahunAjaran.label
-                    : ""}{" "}
-                  - Tingkat {selectedJadwal.tingkatList.join(", ")}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 text-[13px]">
-                <CheckSquare size={16} className="text-purple-500" />
-                <span className="font-semibold text-[var(--text-primary)]">
-                  {selectedJadwal.mapel.nama}
-                </span>
-              </div>
-            </div>
-
-            {/* Checkbox */}
-            <label className="flex items-start gap-3 cursor-pointer group pt-2">
-              <div className="relative flex items-center justify-center mt-0.5">
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={isReadyToTeach}
-                  onChange={(e) => setIsReadyToTeach(e.target.checked)}
-                />
-                <div
-                  className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center ${isReadyToTeach ? "bg-primary border-primary" : "border-[var(--border)] group-hover:border-primary"}`}
-                >
-                  {isReadyToTeach && (
-                    <CheckSquare size={14} className="text-white" />
-                  )}
-                </div>
-              </div>
-              <span className="text-[14px] font-bold text-[var(--text-primary)] leading-tight select-none">
-                Saya sudah di kelas dan siap mengajar.
-              </span>
-            </label>
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setSelectedJadwal(null)}
-                className="px-4 py-2 rounded-[var(--radius-md)] text-[13px] font-bold text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] transition-colors border border-[var(--border)] cursor-pointer"
-              >
-                BATAL
-              </button>
-              <button
-                type="button"
-                onClick={submitAbsensiGuru}
-                disabled={!isReadyToTeach || isSubmittingAbsenGuru}
-                className="px-5 py-2 rounded-[var(--radius-md)] text-[13px] font-bold bg-primary text-white hover:bg-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center gap-2 cursor-pointer"
-              >
-                {isSubmittingAbsenGuru ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />{" "}
-                    Mengarahkan...
-                  </>
-                ) : (
-                  <>
-                    MASUK KE DAFTAR SISWA <ArrowRight size={16} />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }
