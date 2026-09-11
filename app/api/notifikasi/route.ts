@@ -182,7 +182,14 @@ export async function POST(request: Request) {
     const { payload } = await jwtVerify(token, JWT_SECRET);
     const userId = payload.id as string;
 
-    await query(`UPDATE notifikasi SET "isDibaca" = true WHERE "userId" = $1`, [userId]);
+    const body = await request.json().catch(() => ({}));
+    const { id } = body;
+
+    if (id) {
+      await query(`UPDATE notifikasi SET "isDibaca" = true WHERE id = $1 AND "userId" = $2`, [id, userId]);
+    } else {
+      await query(`UPDATE notifikasi SET "isDibaca" = true WHERE "userId" = $1`, [userId]);
+    }
 
     return NextResponse.json({ success: true, message: "Notifikasi ditandai dibaca" });
   } catch (error: any) {

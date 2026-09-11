@@ -123,9 +123,6 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
         const res = await api.get<{ data: any[] }>("/notifikasi").catch(() => ({ data: { data: [] } }));
         const list = (res.data as any).data ?? (Array.isArray(res.data) ? res.data : []);
         setRecentAnnouncements(list);
-        
-        await api.post("/notifikasi/mark-read").catch(() => {});
-        setUnreadCount(0);
       } catch (err) {
         console.error(err);
       } finally {
@@ -224,8 +221,20 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
                     return (
                       <div
                         key={item.id}
-                        onClick={() => {
+                        onClick={async () => {
                           setNotificationsOpen(false);
+                          try {
+                            if (item.type === 'db') {
+                              await api.post("/notifikasi", { id: item.id });
+                            } else if (item.type === 'announcement') {
+                              const annId = item.id.replace('ann-', '');
+                              await api.post("/pengumuman/mark-read", { pengumumanId: annId });
+                            }
+                            fetchProfileAndUnread();
+                          } catch (err) {
+                            console.error(err);
+                          }
+
                           if (item.type === 'announcement') {
                             router.push(`${profileBasePath}/pengumuman`);
                           } else if (isBantuan) {

@@ -20,7 +20,7 @@ import Modal from "@/components/shared/Modal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
-import { Select } from "@/components/shared/Select";
+import { CustomSelect } from "@/components/shared/CustomSelect";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { Users } from "lucide-react";
 import { toast } from "sonner";
@@ -309,15 +309,16 @@ export function UserManagementView() {
   };
 
   const desktopFilters = (
-    <Select
+    <CustomSelect
       value={filterAktif}
-      onChange={(e) => setFilterAktif(e.target.value)}
-      className="py-2 text-[12px] font-medium"
-    >
-      <option value="ALL">Semua Status (Aktif & Nonaktif)</option>
-      <option value="true">Hanya Aktif</option>
-      <option value="false">Hanya Nonaktif</option>
-    </Select>
+      onChange={(val) => setFilterAktif(val)}
+      options={[
+        { value: "ALL", label: "Semua Status (Aktif & Nonaktif)" },
+        { value: "true", label: "Hanya Aktif" },
+        { value: "false", label: "Hanya Nonaktif" },
+      ]}
+      className="w-[240px]"
+    />
   );
 
   const mobileFilters = (
@@ -325,14 +326,15 @@ export function UserManagementView() {
       <label className="text-[11px] font-bold uppercase text-[var(--text-secondary)]">
         Status Akun
       </label>
-      <Select
+      <CustomSelect
         value={filterAktif}
-        onChange={(e) => setFilterAktif(e.target.value)}
-      >
-        <option value="ALL">Semua Status</option>
-        <option value="true">Aktif</option>
-        <option value="false">Nonaktif</option>
-      </Select>
+        onChange={(val) => setFilterAktif(val)}
+        options={[
+          { value: "ALL", label: "Semua Status" },
+          { value: "true", label: "Aktif" },
+          { value: "false", label: "Nonaktif" },
+        ]}
+      />
     </div>
   );
 
@@ -683,16 +685,18 @@ export function UserManagementView() {
               <label className="text-[11px] font-bold uppercase text-[var(--text-secondary)] tracking-wider">
                 Jenis Kelamin
               </label>
-              <Select
+              <CustomSelect
                 value={formData.jenisKelamin}
-                onChange={(e) =>
-                  setFormData({ ...formData, jenisKelamin: e.target.value })
+                onChange={(val) =>
+                  setFormData({ ...formData, jenisKelamin: val })
                 }
-              >
-                <option value="">— Belum Diset —</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </Select>
+                placeholder="— Belum Diset —"
+                options={[
+                  { value: "", label: "— Belum Diset —" },
+                  { value: "Laki-laki", label: "Laki-laki" },
+                  { value: "Perempuan", label: "Perempuan" },
+                ]}
+              />
             </div>
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold uppercase text-[var(--text-secondary)] tracking-wider">

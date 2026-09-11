@@ -29,7 +29,7 @@ import Modal from "@/components/shared/Modal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ModuleToolbar from "@/components/shared/ModuleToolbar";
 import DataTable from "@/components/shared/DataTable";
-import { Select } from "@/components/shared/Select";
+import { CustomSelect } from "@/components/shared/CustomSelect";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 
 type KategoriKelas = "MA" | "MTS";
@@ -391,54 +391,50 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
         {isPromotionMode ? "Tutup Mode Kenaikan" : "⚙️ Mode Kenaikan"}
       </button>
 
-      <Select
+      <CustomSelect
         value={selectedTahunAjaranId}
-        onChange={(e) => setSelectedTahunAjaranId(e.target.value)}
-        className="py-2 text-[12px] font-bold"
-      >
-        <option value="ALL">Semua TA</option>
-        {tahunAjaranList
-          .filter((v, i, a) => a.findIndex((t) => t.label === v.label) === i)
-          .map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.label}
-            </option>
-          ))}
-      </Select>
+        onChange={(val) => setSelectedTahunAjaranId(val)}
+        options={[
+          { value: "ALL", label: "Semua TA" },
+          ...tahunAjaranList
+            .filter((v, i, a) => a.findIndex((t) => t.label === v.label) === i)
+            .map((t) => ({ value: t.id, label: t.label })),
+        ]}
+        className="w-[140px]"
+      />
 
-      <Select
+      <CustomSelect
         value={filterTingkat}
-        onChange={(e) => setFilterTingkat(e.target.value)}
-        className="py-2 text-[12px] font-medium"
-      >
-        <option value="ALL">Semua Tingkat</option>
-        {availableTingkat.map((t) => (
-          <option key={t} value={t}>
-            Tingkat {t}
-          </option>
-        ))}
-      </Select>
+        onChange={(val) => setFilterTingkat(val)}
+        options={[
+          { value: "ALL", label: "Semua Tingkat" },
+          ...availableTingkat.map((t) => ({ value: t, label: `Tingkat ${t}` })),
+        ]}
+        className="w-[140px]"
+      />
 
-      <Select
+      <CustomSelect
         value={filterJenisKelamin}
-        onChange={(e) => setFilterJenisKelamin(e.target.value)}
-        className="py-2 text-[12px] font-medium"
-      >
-        <option value="ALL">Semua Gender</option>
-        <option value="Laki-laki">Laki-laki</option>
-        <option value="Perempuan">Perempuan</option>
-      </Select>
+        onChange={(val) => setFilterJenisKelamin(val)}
+        options={[
+          { value: "ALL", label: "Semua Gender" },
+          { value: "Laki-laki", label: "Laki-laki" },
+          { value: "Perempuan", label: "Perempuan" },
+        ]}
+        className="w-[140px]"
+      />
 
-      <Select
+      <CustomSelect
         value={filterStatus}
-        onChange={(e) => setFilterStatus(e.target.value)}
-        className="py-2 text-[12px] font-medium"
-      >
-        <option value="ALL">Semua Status</option>
-        <option value="AKTIF">Aktif</option>
-        <option value="MUTASI">Mutasi</option>
-        <option value="LULUS">Lulus</option>
-      </Select>
+        onChange={(val) => setFilterStatus(val)}
+        options={[
+          { value: "ALL", label: "Semua Status" },
+          { value: "AKTIF", label: "Aktif" },
+          { value: "MUTASI", label: "Mutasi" },
+          { value: "LULUS", label: "Lulus" },
+        ]}
+        className="w-[140px]"
+      />
     </>
   );
 
@@ -448,65 +444,61 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
           Tahun Ajaran
         </label>
-        <Select
+        <CustomSelect
           value={selectedTahunAjaranId}
-          onChange={(e) => setSelectedTahunAjaranId(e.target.value)}
-        >
-          <option value="ALL">Semua Tahun Ajaran</option>
-          {tahunAjaranList
-            .filter((v, i, a) => a.findIndex((t) => t.label === v.label) === i)
-            .map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-        </Select>
+          onChange={(val) => setSelectedTahunAjaranId(val)}
+          options={[
+            { value: "ALL", label: "Semua Tahun Ajaran" },
+            ...tahunAjaranList
+              .filter((v, i, a) => a.findIndex((t) => t.label === v.label) === i)
+              .map((t) => ({ value: t.id, label: t.label })),
+          ]}
+        />
       </div>
 
       <div className="space-y-1">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
           Tingkat
         </label>
-        <Select
+        <CustomSelect
           value={filterTingkat}
-          onChange={(e) => setFilterTingkat(e.target.value)}
-        >
-          <option value="ALL">Semua Tingkat</option>
-          {availableTingkat.map((t) => (
-            <option key={t} value={t}>
-              Tingkat {t}
-            </option>
-          ))}
-        </Select>
+          onChange={(val) => setFilterTingkat(val)}
+          options={[
+            { value: "ALL", label: "Semua Tingkat" },
+            ...availableTingkat.map((t) => ({ value: t, label: `Tingkat ${t}` })),
+          ]}
+        />
       </div>
 
       <div className="space-y-1">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
           Gender
         </label>
-        <Select
+        <CustomSelect
           value={filterJenisKelamin}
-          onChange={(e) => setFilterJenisKelamin(e.target.value)}
-        >
-          <option value="ALL">Semua Gender</option>
-          <option value="Laki-laki">Laki-laki</option>
-          <option value="Perempuan">Perempuan</option>
-        </Select>
+          onChange={(val) => setFilterJenisKelamin(val)}
+          options={[
+            { value: "ALL", label: "Semua Gender" },
+            { value: "Laki-laki", label: "Laki-laki" },
+            { value: "Perempuan", label: "Perempuan" },
+          ]}
+        />
       </div>
 
       <div className="space-y-1">
         <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
           Status
         </label>
-        <Select
+        <CustomSelect
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="ALL">Semua Status</option>
-          <option value="AKTIF">Aktif</option>
-          <option value="MUTASI">Mutasi</option>
-          <option value="LULUS">Lulus</option>
-        </Select>
+          onChange={(val) => setFilterStatus(val)}
+          options={[
+            { value: "ALL", label: "Semua Status" },
+            { value: "AKTIF", label: "Aktif" },
+            { value: "MUTASI", label: "Mutasi" },
+            { value: "LULUS", label: "Lulus" },
+          ]}
+        />
       </div>
       <div className="pt-2 border-t border-[var(--border)]">
         <button
@@ -1155,17 +1147,16 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
               <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">
                 Jenis Kelamin
               </label>
-              <select
+              <CustomSelect
                 value={formData.jenisKelamin}
-                onChange={(e) =>
-                  handleFormChange("jenisKelamin", e.target.value)
-                }
-                className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-              >
-                <option value="">— Pilih Jenis Kelamin —</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </select>
+                onChange={(val) => handleFormChange("jenisKelamin", val)}
+                placeholder="— Pilih Jenis Kelamin —"
+                options={[
+                  { value: "", label: "— Pilih Jenis Kelamin —" },
+                  { value: "Laki-laki", label: "Laki-laki" },
+                  { value: "Perempuan", label: "Perempuan" },
+                ]}
+              />
             </div>
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">
@@ -1202,18 +1193,15 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
               <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">
                 Tingkat Kelas <span className="text-rose-500">*</span>
               </label>
-              <select
+              <CustomSelect
                 value={formData.tingkat}
-                onChange={(e) => handleFormChange("tingkat", e.target.value)}
-                className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-              >
-                <option value="">— Pilih Tingkat —</option>
-                {availableTingkat.map((t) => (
-                  <option key={t} value={t}>
-                    Tingkat {t}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => handleFormChange("tingkat", val)}
+                placeholder="— Pilih Tingkat —"
+                options={[
+                  { value: "", label: "— Pilih Tingkat —" },
+                  ...availableTingkat.map((t) => ({ value: t, label: `Tingkat ${t}` })),
+                ]}
+              />
             </div>
           </div>
 
@@ -1221,23 +1209,22 @@ export function StudentManagementView({ jenjang }: StudentManagementViewProps) {
             <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">
               Status Siswa
             </label>
-            <select
+            <CustomSelect
               value={formData.status}
-              onChange={(e) =>
+              onChange={(val) =>
                 handleFormChange(
                   "status",
-                  e.target.value as "AKTIF" | "MUTASI" | "LULUS",
+                  val as "AKTIF" | "MUTASI" | "LULUS",
                 )
               }
-              className="w-full px-3 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] text-[13px] text-[var(--text-primary)] outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-            >
-              <option value="AKTIF">AKTIF</option>
-              <option value="MUTASI">MUTASI</option>
-              {(isTerminalGrade(formData.tingkat) ||
-                formData.status === "LULUS") && (
-                <option value="LULUS">LULUS</option>
-              )}
-            </select>
+              options={[
+                { value: "AKTIF", label: "AKTIF" },
+                { value: "MUTASI", label: "MUTASI" },
+                ...(isTerminalGrade(formData.tingkat) || formData.status === "LULUS"
+                  ? [{ value: "LULUS", label: "LULUS" }]
+                  : []),
+              ]}
+            />
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border)]">
